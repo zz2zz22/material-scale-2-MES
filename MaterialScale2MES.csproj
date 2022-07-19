@@ -159,6 +159,7 @@
     <Compile Include="Controller\SqlClass\sqlMesPlanningExcutionCon.cs" />
     <Compile Include="Model\DataClass\VariablesSave.cs" />
     <Compile Include="Model\SupportClass.cs" />
+    <Compile Include="Model\Upload2MES\UploadMain.cs" />
     <Compile Include="View\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -196,12 +197,17 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Resources\refreshing.png" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="Resources\logoTechlink.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\logoTechlinkFix.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\imageedit_2_7258227815.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

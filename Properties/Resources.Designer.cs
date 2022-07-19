@@ -63,6 +63,16 @@ namespace MaterialScale2MES.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap imageedit_2_7258227815 {
+            get {
+                object obj = ResourceManager.GetObject("imageedit_2_7258227815", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap logoTechlink {
             get {
                 object obj = ResourceManager.GetObject("logoTechlink", resourceCulture);
@@ -76,6 +86,16 @@ namespace MaterialScale2MES.Properties {
         internal static System.Drawing.Bitmap logoTechlinkFix {
             get {
                 object obj = ResourceManager.GetObject("logoTechlinkFix", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap refreshing {
+            get {
+                object obj = ResourceManager.GetObject("refreshing", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

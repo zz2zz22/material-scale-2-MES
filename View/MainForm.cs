@@ -15,14 +15,64 @@ namespace MaterialScale2MES
     public partial class MainForm : Form
     {
         DataTable tempMat = new DataTable();
+        DataTable dtgvWOData = new DataTable();
+        //Init variables
         string dataIn;
         double totalScaleWeight = 0;
-        double totalScanWeight = 0;
+        string tempMatCode;
+        double tempScaleQty, returnValue;
         int scaleTimes = 0;
+        int subRowIndex = -1;
         bool isLoad2DTGV = false;
+        bool isAddSubMat = false;
+        
         public MainForm()
         {
             InitializeComponent();
+
+            addTempMatColumn();
+            SupportClass.LoadData2DTGVScannedMat(dtgv_allScannedMat, tempMat);
+
+            var editButtonColumn = new DataGridViewButtonColumn();
+            editButtonColumn.Text = "Liệu phụ";
+            editButtonColumn.UseColumnTextForButtonValue = true;
+            dtgv_allScannedMat.Columns.Add(editButtonColumn);
+            
+
+            var deleteButtonColumn = new DataGridViewButtonColumn();
+            deleteButtonColumn.Text = "X";
+            deleteButtonColumn.UseColumnTextForButtonValue = true;
+            deleteButtonColumn.Width = 25;
+            dtgv_allScannedMat.Columns.Add(deleteButtonColumn);
+        }
+
+        public void addTempMatColumn()
+        {
+            DataColumn tempMatCol;
+            tempMatCol = new DataColumn();
+            tempMatCol.DataType = Type.GetType("System.String");
+            tempMatCol.ColumnName = "MatCode";
+            tempMat.Columns.Add(tempMatCol);
+
+            tempMatCol = new DataColumn();
+            tempMatCol.DataType = Type.GetType("System.String");
+            tempMatCol.ColumnName = "SubMat";
+            tempMat.Columns.Add(tempMatCol);
+
+            tempMatCol = new DataColumn();
+            tempMatCol.DataType = Type.GetType("System.String");
+            tempMatCol.ColumnName = "ExpDate";
+            tempMat.Columns.Add(tempMatCol);
+
+            tempMatCol = new DataColumn();
+            tempMatCol.DataType = Type.GetType("System.String");
+            tempMatCol.ColumnName = "LOT";
+            tempMat.Columns.Add(tempMatCol);
+
+            tempMatCol = new DataColumn();
+            tempMatCol.DataType = Type.GetType("System.String");
+            tempMatCol.ColumnName = "SumScale";
+            tempMat.Columns.Add(tempMatCol);
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -48,27 +98,60 @@ namespace MaterialScale2MES
         #region ScaleConnect
         private void showData(object sender, EventArgs e)
         {
-            double returnValue;
             if (double.TryParse(dataIn, out returnValue))
             {
-
+                tempScaleQty = totalScaleWeight;
+                returnValue = double.Parse(dataIn);
             }
+            if (returnValue != 0)
+            {
+                totalScaleWeight += returnValue;
+                lb_scaleQty.Text = returnValue.ToString();
+                lb_sumScaleQty.Text = totalScaleWeight.ToString();
+                scaleTimes = 0; // --> Not allow user to scale another time without scan material QR code
+                pnl_scaleWait.BackColor = Color.Black;
+                this.Invoke(new EventHandler(add2tempMat));
+                SupportClass.LoadData2DTGVScannedMat(dtgv_allScannedMat, tempMat);
+            }
+        }
+
+        private void add2tempMat (object sender, EventArgs e)
+        {
+            //Check và add data liệu vừa cân vào datatable
+            if (tempMat.Rows.Count > 0)
+            {
+                bool checkExistMat = false;
+                for (int i = 0; i < tempMat.Rows.Count; i ++)
+                {
+                    if ((tempMat.Rows[i]["MatCode"].ToString() == VariablesSave.matCode || tempMat.Rows[i]["SubMat"].ToString() == VariablesSave.matCode))
+                    {
+                        tempMat.Rows[i]["SumScale"] = totalScaleWeight.ToString();
+                        checkExistMat = true;
+                    }
+                }
+                if(!checkExistMat)
+                {
+                    tempMat.Rows.Add(VariablesSave.matCode, "", VariablesSave.matExpDate, VariablesSave.matLotNo, totalScaleWeight);
+                }
+            }
+            else
+            {
+                tempMat.Rows.Add(VariablesSave.matCode, "", VariablesSave.matExpDate, VariablesSave.matLotNo, totalScaleWeight);
+            }
+            tempMatCode = VariablesSave.matCode;
         }
 
         private void serialPort1_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
         {
-            if (scaleTimes == 0)
-            {
-                MessageBox.Show("Xin hãy quét QR liệu trước khi cân!");
-            }
             if (scaleTimes == 1)
             {
-                dataIn = serialPort1.ReadLine().Replace("kg", "").Trim();
-                this.Invoke(new EventHandler(showData));
-            } 
+                dataIn = serialPort1.ReadExisting().Replace("kg", "").Trim();
+                //Problem about scale latency --> Config scale mode --> HOLD mode 0 --> Kinda ok when test multiple time ( must wait for COM port to finalizing conneection )
+                this.Invoke(new EventHandler(showData)); 
+            }
         }
 
-        private void btOpen_Click(object sender, EventArgs e)
+        private void btOpen_Click(object sender, EventArgs e) //Open COM port to scale
         {
             try
             {
@@ -107,14 +190,12 @@ namespace MaterialScale2MES
             {
                 MessageBox.Show(err.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            txtQR.Focus();
         }
 
-        private void btClose_Click(object sender, EventArgs e)
+        private void btClose_Click(object sender, EventArgs e) //Close COM port to scale
         {
-            if (String.IsNullOrEmpty(cbComPort.Text))
-            {
-            }
-            else
+            if (!String.IsNullOrEmpty(cbComPort.Text))
             {
                 if (serialPort1.IsOpen)
                 {
@@ -135,11 +216,26 @@ namespace MaterialScale2MES
             txtQR.Focus();
         }
 
-        private void btn_portRefresh_Click(object sender, EventArgs e)
+        private void btn_portRefresh_Click(object sender, EventArgs e) //Refresh COM port list
         {
             cbComPort.Items.Clear();
             string[] ports = SerialPort.GetPortNames();
             cbComPort.Items.AddRange(ports);
+            if (serialPort1.IsOpen)
+            {
+                serialPort1.Close();
+                progressBar1.Value = 0;
+            }
+            if (btClose.Enabled)
+            {
+                btOpen.Enabled = true;
+                btClose.Enabled = false;
+            }
+            else
+            {
+                btOpen.Enabled = false;
+            }
+            cbComPort.Enabled = true;
             txtQR.Focus();
         }
         #endregion
@@ -149,146 +245,311 @@ namespace MaterialScale2MES
         //////////Xử lý quét QR / QR scan logic
         //////////
         //////////
-        private void txtQR_KeyPress(object sender, KeyPressEventArgs e)
+        
+        // Hàm check nếu đã có dữ liệu lưu trữ liệu chưa ( Cho những đơn đã làm )
+        public bool checkExistMatOrder (string jobOrdUUID) // Check if Job order have Import material order
         {
+            VariablesSave.ResetJobOrdMat();
+            ComboBox cbx_checkExMat = new ComboBox();
+            sqlMesPlanningExcutionCon sqlMesPlanning = new sqlMesPlanningExcutionCon();
+            StringBuilder getAllMatOrdUUID = new StringBuilder();
+            getAllMatOrdUUID.Append(@" SELECT DISTINCT UUID FROM job_order_material
+ WHERE job_order_uuid = '" + jobOrdUUID + "' AND delete_flag = '0'");
+            sqlMesPlanning.getComboBoxData(getAllMatOrdUUID.ToString(), ref cbx_checkExMat);
+            if (cbx_checkExMat.Items.Count > 0)
+            {
+                string tempMatOrdUUIDs = "";
+                for (int i = 0; i < cbx_checkExMat.Items.Count; i++)
+                {
+                    if (i == 0)
+                    {
+                        tempMatOrdUUIDs = cbx_checkExMat.Items[i].ToString();
+                    }
+                    else
+                    {
+                        tempMatOrdUUIDs = tempMatOrdUUIDs + ";" + cbx_checkExMat.Items[i].ToString();
+                    }
+                }
+                VariablesSave.MatOrder = tempMatOrdUUIDs.Split(';');
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private void txtQR_KeyPress(object sender, KeyPressEventArgs e)
+       {
             if (e.KeyChar == (char)13)
             {
-                string QRtext = txtQR.Text;
-                txtQR.Text = null;
-                string[] matCode = null;
-                if (!String.IsNullOrEmpty(QRtext))
+                if (serialPort1.IsOpen)
                 {
-                    matCode = QRtext.Split(';');
-                    //Xét QR là mã liệu hay mã nhân viên nếu mã nhân viên thì lưu lên MES
-                    if (QRtext.Substring(0, 1) == "s" && matCode[0] != "setting")
+                    string QRtext = txtQR.Text;
+                    txtQR.Text = null;
+                    string[] matCode = null;
+                    if (!String.IsNullOrEmpty(QRtext))
                     {
-                        if (!String.IsNullOrEmpty(matCode[1]))
+                        matCode = QRtext.Split(';');
+                        //Xét QR là mã liệu hay mã nhân viên nếu mã nhân viên thì lưu lên MES
+                        if (QRtext.Substring(0, 1) == "s" && matCode[0] != "setting")
                         {
-                            lb_matCode.Text = matCode[1]; 
-                            if (!isLoad2DTGV)
+                            if (!String.IsNullOrEmpty(matCode[1]))
                             {
-                                DialogResult dialogResultConfirmMatCode = MessageBox.Show("Use \"" + matCode[1] + "\" material code to find oders ?", "", MessageBoxButtons.OKCancel);
-                                if (dialogResultConfirmMatCode == DialogResult.OK)
+                                if (!isLoad2DTGV)
                                 {
-                                    sqlMesPlanningExcutionCon sqlMesPlanningExcution = new sqlMesPlanningExcutionCon();
-                                    dtgv_chooseWO.Enabled = true;
-                                    ComboBox cbxWOUUID_ = new ComboBox();
-                                    StringBuilder sqlGetWOfromMatCode = new StringBuilder();
-                                    sqlGetWOfromMatCode.Append(@"SELECT DISTINCT a.work_order_uuid 
+                                    lb_matCode.Text = matCode[1];
+                                    DialogResult dialogResultConfirmMatCode = MessageBox.Show("Use \"" + matCode[1] + "\" material code to find oders ?", "", MessageBoxButtons.OKCancel);
+                                    if (dialogResultConfirmMatCode == DialogResult.OK)
+                                    {
+                                        sqlMesPlanningExcutionCon sqlMesPlanningExcution = new sqlMesPlanningExcutionCon();
+                                        dtgv_chooseWO.Enabled = true;
+                                        ComboBox cbxWOUUID_ = new ComboBox();
+                                        StringBuilder sqlGetWOfromMatCode = new StringBuilder();
+                                        sqlGetWOfromMatCode.Append(@"SELECT DISTINCT a.work_order_uuid 
  FROM work_order_material AS a
  JOIN work_order_process AS b ON a.work_order_uuid = b.work_order_uuid
  WHERE (b.dispatch_quantity - b.finish_quantity) > 0 
  AND a.delete_flag = '0' AND b.delete_flag = '0'
  AND a.material_no LIKE '" + matCode[1].Trim() + "'");
-                                    sqlMesPlanningExcution.getComboBoxData(sqlGetWOfromMatCode.ToString(), ref cbxWOUUID_);
-                                    if (cbxWOUUID_.Items.Count > 0)
-                                    {
-                                        DataTable dtgvWOData = new DataTable();
-                                        for (int i = 0; i < cbxWOUUID_.Items.Count; i++)
+                                        sqlMesPlanningExcution.getComboBoxData(sqlGetWOfromMatCode.ToString(), ref cbxWOUUID_);
+                                        if (cbxWOUUID_.Items.Count > 0)
                                         {
-                                            StringBuilder sqlGetDTGVData = new StringBuilder();
-                                            sqlGetDTGVData.Append(@"SELECT a.order_uuid AS ID,a.order_no AS orderNo, a.product_no AS prodNo, a.product_name AS prodName, 
- a.sales_order_no AS saleNo, b.plan_quantity AS orderQty, b.dispatch_quantity AS dispatchQty, b.finish_quantity AS finishQty,
- (b.dispatch_quantity - b.finish_quantity) AS remainQty, a.create_date AS createDate
+                                            for (int i = 0; i < cbxWOUUID_.Items.Count; i++)
+                                            {
+                                                StringBuilder sqlGetDTGVData = new StringBuilder();
+                                                sqlGetDTGVData.Append(@"SELECT c.uuid AS jobOrdUUID, a.order_uuid AS ID,a.order_no AS orderNo, c.job_no AS jobNo, a.product_no AS prodNo, c.job_quantity AS orderQty, c.actual_finish_qty AS finishQty, c.create_date AS createDate 
  FROM work_order AS a
  JOIN work_order_process AS b ON a.order_uuid = b.work_order_uuid
- WHERE a.delete_flag = '0' AND b.delete_flag = '0'
- AND a.order_uuid LIKE '" + cbxWOUUID_.Items[i].ToString() + "' AND a.order_no LIKE '%SEMI%'");
-                                            sqlMesPlanningExcution.sqlDataAdapterFillDatatable(sqlGetDTGVData.ToString(), ref dtgvWOData);
-                                        }
-                                        if (dtgvWOData.Rows.Count > 0)
-                                        {
-                                            SupportClass.LoadData2DTGVChooseWO(dtgv_chooseWO, dtgvWOData);
-                                            isLoad2DTGV = true;
+ JOIN job_order AS c ON a.order_uuid = c.work_order_uuid
+ WHERE a.delete_flag = '0' AND b.delete_flag = '0' AND c.delete_flag = '0'
+ AND a.order_uuid LIKE '" + cbxWOUUID_.Items[i].ToString() + "' AND a.order_no LIKE '%SEMI%' AND c.job_status < 4");
+                                                sqlMesPlanningExcution.sqlDataAdapterFillDatatable(sqlGetDTGVData.ToString(), ref dtgvWOData);
+                                            }
+                                            if (dtgvWOData.Rows.Count > 0)
+                                            {
+                                                SupportClass.LoadData2DTGVChooseWO(dtgv_chooseWO, dtgvWOData);
+                                                isLoad2DTGV = true;
+                                            }
+                                            else
+                                            {
+                                                MessageBox.Show("Không có đơn bán thành phẩm nào cần làm của mã liệu này!");
+                                                isLoad2DTGV = false;
+                                            }
                                         }
                                         else
                                         {
-                                            MessageBox.Show("Không có đơn bán thành phẩm nào cần làm của mã liệu này!");
-                                            isLoad2DTGV = true; // test
+                                            MessageBox.Show("Không có đơn nào có mã liệu này được sinh quản phát đơn!");
+                                            isLoad2DTGV = false;
                                         }
                                     }
-                                    else
-                                    {
-                                        MessageBox.Show("Không có đơn nào có mã liệu này được sinh quản phát đơn!");
-                                    }
+                                    txtQR.Focus();
                                 }
-                                txtQR.Focus();
+                                else
+                                {
+                                    //
+                                    //
+                                    //
+                                    //Code xử lý cân liệu // Logic for scaling material 
+                                    //
+                                    //
+                                    //
+                                    if (!String.IsNullOrEmpty(VariablesSave.deptUUID))
+                                    {
+                                        sqlMesPlanningExcutionCon sqlMesPlanningExcution = new sqlMesPlanningExcutionCon();
+                                        ComboBox cbx_matCodeList = new ComboBox();
+                                        StringBuilder getMatCode = new StringBuilder();
+                                        getMatCode.Append(@"SELECT DISTINCT material_no FROM mes_planning_excution.work_order_material
+where work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'");
+                                        sqlMesPlanningExcution.getComboBoxData(getMatCode.ToString(), ref cbx_matCodeList);
+                                        if (isAddSubMat == true)
+                                        {
+                                            if (!cbx_matCodeList.Items.Contains(matCode[1].Trim()))
+                                            {
+                                                DialogResult dialogResult = MessageBox.Show("Mã liệu "+matCode[1]+"vừa quét không có trong đơn làm việc, chắc chắn muốn lưu ?", "Warning", MessageBoxButtons.OKCancel);
+                                                if (dialogResult == DialogResult.OK)
+                                                {
+                                                    if (subRowIndex != -1 && tempMat.Rows[subRowIndex]["MatCode"].ToString() != matCode[1].Trim())
+                                                    {
+                                                        tempMat.Rows[subRowIndex]["SubMat"] = matCode[1].Trim();
+                                                        
+                                                    }
+                                                    else
+                                                    {
+                                                        MessageBox.Show("Lỗi không bắt được mã hoặc mã trùng với mã liệu chính!");
+                                                    }
+                                                    isAddSubMat = false;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                DialogResult dialogResult = MessageBox.Show("Thêm mã liệu "+matCode[1]+" thành liệu phụ ?", "Warning", MessageBoxButtons.OKCancel);
+                                                if (dialogResult == DialogResult.OK)
+                                                {
+                                                    if (subRowIndex != -1 && tempMat.Rows[subRowIndex]["MatCode"].ToString() != matCode[1].Trim())
+                                                    {
+                                                        tempMat.Rows[subRowIndex]["SubMat"] = matCode[1].Trim();
+                                                    }
+                                                    else
+                                                    {
+                                                        MessageBox.Show("Lỗi không bắt được mã hoặc mã trùng với mã liệu chính!");
+                                                    }
+                                                    isAddSubMat = false;
+                                                }
+                                                txtQR.Focus();
+                                            }
+                                        }
+                                        else
+                                        {
+                                            //bool checkSubMat = false;
+                                            //if (tempMat.Rows.Count > 0)
+                                            //{
+                                            //    for(int k = 0; k < tempMat.Rows.Count; k ++)
+                                            //    {
+                                            //        if (tempMat.Rows[k]["SubMat"].ToString() == matCode[1].Trim())
+                                            //            checkSubMat = true;
+                                            //    }
+                                            //}
+                                            //if (cbx_matCodeList.Items.Contains(matCode[1].Trim()) || checkSubMat == true)
+                                            //{
+                                                if (scaleTimes == 0)
+                                                {
+                                                    int flag = 0;
+                                                    lb_matCode.Text = "...";
+                                                    txb_searchOrder.Text = "";
+                                                    dtgv_chooseWO.DataSource = null;
+                                                    dtgv_chooseWO.Enabled = false;
+                                                    //Show scanned material info and save to temporary variable
+                                                    lb_scanMatCode.Text = matCode[1].Trim();
+                                                    VariablesSave.matCode = matCode[1].Trim();
+                                                    lb_scanMatExpiryDate.Text = matCode[3].Trim();
+                                                    VariablesSave.matExpDate = matCode[3].Trim();
+                                                    lb_scanLOTPO.Text = matCode[4].Trim();
+                                                    VariablesSave.matLotNo = matCode[4].Trim();
+                                                    totalScaleWeight = 0;
+                                                    if (tempMat.Rows.Count > 0)
+                                                    {
+                                                        for (int j = 0; j < tempMat.Rows.Count; j++)
+                                                        {
+                                                            if (tempMat.Rows[j]["MatCode"].ToString() == matCode[1])
+                                                            {
+                                                                flag = j;
+                                                                totalScaleWeight = double.Parse(tempMat.Rows[j]["SumScale"].ToString());
+                                                            }
+                                                        }
+                                                    }
+                                                    
+                                                    scaleTimes = 1;
+                                                    pnl_scaleWait.BackColor = Color.ForestGreen;
+                                                    lb_scaleQty.Text = "0";
+                                                    lb_sumScaleQty.Text = "0";
+                                                }
+                                                else
+                                                {
+                                                    MessageBox.Show("Mã đã quét vui lòng cân liệu!");
+                                                }
+                                            //}
+                                            //else
+                                            //{
+                                            //    MessageBox.Show("Mã liệu vừa quét không thuộc đơn đã chọn vui lòng thử lại!");
+                                            //}
+                                        }
+                                    }
+                                    txtQR.Focus();
+                                }
                             }
                             else
                             {
-                                VariablesSave.matCode = matCode[1].Trim();
-                                VariablesSave.matScanQuantity = double.Parse(matCode[2]);
-                                VariablesSave.matExpDate = matCode[3];
-                                VariablesSave.matLotNo = matCode[4];
-                                scaleTimes = 1;
-                                MessageBox.Show("Bắt đầu cân liệu");
+                                MessageBox.Show("Không thể đọc được mã liệu xin hãy quét lại!");
                             }
+                            txtQR.Focus();
                         }
                         else
                         {
-                            MessageBox.Show("Không thể đọc được mã liệu xin hãy quét lại!");
-                        }
-                        txtQR.Focus();
-                    }
-                    else
-                    {
-                        if (matCode[0] != "setting" && String.IsNullOrEmpty(matCode[4]))
-                        {
-                            string UUID = null;
-                            sqlMesBaseDataCon sqlMesBaseData = new sqlMesBaseDataCon();
-                            if (VariablesSave.empID != null)
+                            if (matCode[0] != "setting" && String.IsNullOrEmpty(matCode[4]))
                             {
-                                DialogResult dialogResultCheckExistEmp = MessageBox.Show("Bạn có muốn thay đổi nhân viên ? Hiện tại đang là " + VariablesSave.empName, "Cảnh báo", MessageBoxButtons.OKCancel);
-                                if (dialogResultCheckExistEmp == DialogResult.OK)
+                                string UUID = null;
+                                sqlMesBaseDataCon sqlMesBaseData = new sqlMesBaseDataCon();
+                                if (VariablesSave.empID != null)
+                                {
+                                    DialogResult dialogResultCheckExistEmp = MessageBox.Show("Bạn có muốn thay đổi nhân viên ? Hiện tại đang là " + VariablesSave.empName, "Cảnh báo", MessageBoxButtons.OKCancel);
+                                    if (dialogResultCheckExistEmp == DialogResult.OK)
+                                    {
+                                        UUID = QRtext.ToString().Substring(1, QRtext.IndexOf(';') - 1);
+                                        VariablesSave.empID = UUID;
+                                        VariablesSave.empName = sqlMesBaseData.sqlExecuteScalarString("select name from employee_info where uuid = '" + UUID.Trim() + "'");
+                                        VariablesSave.empCode = sqlMesBaseData.sqlExecuteScalarString("select code from employee_info where uuid = '" + UUID.Trim() + "'");
+                                    }
+                                }
+                                else
                                 {
                                     UUID = QRtext.ToString().Substring(1, QRtext.IndexOf(';') - 1);
                                     VariablesSave.empID = UUID;
                                     VariablesSave.empName = sqlMesBaseData.sqlExecuteScalarString("select name from employee_info where uuid = '" + UUID.Trim() + "'");
                                     VariablesSave.empCode = sqlMesBaseData.sqlExecuteScalarString("select code from employee_info where uuid = '" + UUID.Trim() + "'");
                                 }
-                            }else
-                            {
-                                UUID = QRtext.ToString().Substring(1, QRtext.IndexOf(';') - 1);
-                                VariablesSave.empID = UUID;
-                                VariablesSave.empName = sqlMesBaseData.sqlExecuteScalarString("select name from employee_info where uuid = '" + UUID.Trim() + "'");
-                                VariablesSave.empCode = sqlMesBaseData.sqlExecuteScalarString("select code from employee_info where uuid = '" + UUID.Trim() + "'");
+                                lb_empCode.Text = VariablesSave.empCode;
+                                lb_empName.Text = VariablesSave.empName;
                             }
-                            lb_empCode.Text = VariablesSave.empCode;
-                            lb_empName.Text = VariablesSave.empName;
+                            else
+                            {
+                                //MessageBox
+                            }
+                            txtQR.Focus();
                         }
-                        else 
-                        {
-                            MessageBox.Show("Không thể nhận diện mã!");
-                            
-                        }
-                        txtQR.Focus();
                     }
+                    else
+                    {
+                        MessageBox.Show("Không thể đọc được mã QR xin hãy kiểm tra USB port và quét lại!");
+                    }
+                    txtQR.Focus();
                 }
                 else
                 {
-                    MessageBox.Show("Không thể đọc được mã QR xin hãy kiểm tra USB port và quét lại!");
+                    MessageBox.Show("Vui lòng kết nối cân điện tử!");
                 }
-                txtQR.Focus();
             }
+            txtQR.Focus();
         }
 
         private void btn_reselectWO_Click(object sender, EventArgs e)
         {
-            lb_matCode.Text = "...";
-            isLoad2DTGV = false;
-            dtgv_chooseWO.DataSource = null;
-            dtgv_chooseWO.Enabled = false;
-            txtQR.Focus();
-            if (!String.IsNullOrEmpty(VariablesSave.deptUUID))
+            DialogResult dialogResult = MessageBox.Show("Cảnh báo", "Bạn có muốn chọn lại đơn khác và xóa các dữ liệu đã cân?", MessageBoxButtons.OKCancel);
+            if (dialogResult == DialogResult.OK)
             {
-                lb_orderNo.Text = "";
-                lb_matCode.Text = "";
-                lb_orderQty.Text = "";
-                lb_dispatchQty.Text = "";
-                lb_finishQty.Text = "";
-                lb_remainQty.Text = "";
+                //label quét liệu lần đầu
+                lb_matCode.Text = "...";
+                isLoad2DTGV = false; // khởi tạo lại để cho quét liệu tìm đơn
+                dtgv_chooseWO.DataSource = null;
+                dtgv_chooseWO.Enabled = false;
+                //Nếu chỉ clear() thì vẫn còn column ==> bug ==> nên tạo thành table mới 
+                dtgvWOData = new DataTable();
+                tempMat = new DataTable();
+                addTempMatColumn();
+                this.dtgv_allScannedMat.DataSource = tempMat;
+
+                VariablesSave.ResetDept();
+                VariablesSave.ResetMaterial();
+                //Các label lúc chọn liệu
+                lb_erpNo.Text = "...";
+                lb_jobNo.Text = "...";
+                lb_prodNo.Text = "...";
+                lb_createDate.Text = "...";
+                lb_finishQty.Text = "...";
+                lb_orderQty.Text = "...";
+
+                //Các label lúc cân liệu
+                lb_scanMatCode.Text = "...";
+                lb_scanMatExpiryDate.Text = "...";
+                lb_scanLOTPO.Text = "...";
+                lb_scaleQty.Text = "0";
+                lb_sumScaleQty.Text = "0";
+
+                scaleTimes = 0;
+                pnl_scaleWait.BackColor = Color.Black;
             }
-            tempMat.Clear();
+            txtQR.Text = null;
+            txtQR.Focus();
         }
 
         private void cbComPort_KeyPress(object sender, KeyPressEventArgs e)
@@ -343,15 +604,122 @@ namespace MaterialScale2MES
                 int selectedrowindex = dtgv_chooseWO.SelectedCells[0].RowIndex;
                 DataGridViewRow selectedRow = dtgv_chooseWO.Rows[selectedrowindex];
                 VariablesSave.deptUUID = Convert.ToString(selectedRow.Cells["ID"].Value);
-                lb_orderNo.Text = Convert.ToString(selectedRow.Cells["orderNo"].Value);
-                lb_prodCode.Text = Convert.ToString(selectedRow.Cells["prodNo"].Value);
-                lb_orderQty.Text = Convert.ToString(selectedRow.Cells["orderQty"].Value);
-                lb_dispatchQty.Text = Convert.ToString(selectedRow.Cells["dispatchQty"].Value);
+                VariablesSave.JobOrdUUID = Convert.ToString(selectedRow.Cells["jobOrdUUID"].Value);
+                lb_erpNo.Text = Convert.ToString(selectedRow.Cells["orderNo"].Value);
+                lb_jobNo.Text = Convert.ToString(selectedRow.Cells["jobNo"].Value);
                 lb_finishQty.Text = Convert.ToString(selectedRow.Cells["finishQty"].Value);
-                lb_remainQty.Text = Convert.ToString(selectedRow.Cells["remainQty"].Value);
+                lb_prodNo.Text = Convert.ToString(selectedRow.Cells["prodNo"].Value);
+                lb_createDate.Text = Convert.ToString(selectedRow.Cells["createDate"].Value);
+                lb_orderQty.Text = Convert.ToString(selectedRow.Cells["orderQty"].Value);
+            }
+            txtQR.Focus();
+        }
+
+        private void txb_searchOrder_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)13)
+            {
+                this.dtgv_chooseWO.ClearSelection();
+                if (txb_searchOrder.Text.Trim() != "")
+                {
+                    DataTable dt = new DataTable();
+                    string selectExpression = "orderNo LIKE '%" + txb_searchOrder.Text.Trim() + "%' OR jobNo like '%" + txb_searchOrder.Text.Trim() + "%' OR prodNo like '%" + txb_searchOrder.Text.Trim() + "%'";
+                    dtgv_chooseWO.DataSource = null;
+                    if (dtgvWOData.Rows.Count > 0)
+                    {
+                        DataRow[] rows = dtgvWOData.Select(selectExpression);
+                        if (rows.Count() > 0)
+                        {
+                            dt = rows.CopyToDataTable();
+                            SupportClass.LoadData2DTGVChooseWO(dtgv_chooseWO, dt);
+                        }
+                    }
+                }
+                else
+                {
+                    SupportClass.LoadData2DTGVChooseWO(dtgv_chooseWO, dtgvWOData);
+                }
+                txtQR.Focus();
             }
         }
 
-        
+        private void dtgv_allScannedMat_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                if (e.ColumnIndex == 0) // Lưu cột button = index 0 do thêm = hard code :v 
+                {
+                    subRowIndex = e.RowIndex;
+                    isAddSubMat = true;
+                    MessageBox.Show("Mã liệu quét tiếp theo sẽ được lưu thành liệu phụ!");
+                }
+                if (e.ColumnIndex == 1) // Lưu cột button = index 0 do thêm = hard code :v 
+                {
+                    DataRow dr = tempMat.Rows[e.RowIndex];
+                    dr.Delete();
+                    tempMat.AcceptChanges();
+                    SupportClass.LoadData2DTGVScannedMat(dtgv_allScannedMat, tempMat);
+                }
+                if (e.ColumnIndex == 3) // Lưu cột button = index 0 do thêm = hard code :v 
+                {
+                    DialogResult dialogResult = MessageBox.Show("Xóa thông tin liệu phụ ?", "Warning", MessageBoxButtons.OKCancel);
+                    if (dialogResult == DialogResult.OK)
+                    {
+                        tempMat.Rows[e.RowIndex]["SubMat"] = "";
+                        SupportClass.LoadData2DTGVScannedMat(dtgv_allScannedMat, tempMat);
+                    }
+                }
+            }
+            txtQR.Focus();
+        }
+
+        private void btn_save2MES_Click(object sender, EventArgs e)
+        {
+
+            txtQR.Focus();
+        }
+
+        private void btn_Undo_Click(object sender, EventArgs e)
+        {
+            if ( tempMat.Rows.Count > 0)
+            {
+                for (int i = 0; i < tempMat.Rows.Count; i++)
+                {
+                    if (tempMat.Rows[i]["MatCode"].ToString() == tempMatCode || tempMat.Rows[i]["SubMat"].ToString() == tempMatCode)
+                    {
+                        tempMat.Rows[i]["SumScale"] = tempScaleQty;
+                    }
+                }
+            }
+            txtQR.Focus();
+        }
+
+        private void btn_saveTempMat_Click(object sender, EventArgs e)
+        {
+            if (returnValue != 0)
+            {
+                scaleTimes = 0; // --> Not allow user to scale another time without scan material QR code
+                pnl_scaleWait.BackColor = Color.Black;
+                this.Invoke(new EventHandler(add2tempMat));
+                SupportClass.LoadData2DTGVScannedMat(dtgv_allScannedMat, tempMat);
+            }
+        }
+
+        private void txb_searchOrder_TextChanged(object sender, EventArgs e)
+        {
+            if (txb_searchOrder.Text.Trim() == "")
+            {
+                SupportClass.LoadData2DTGVChooseWO(dtgv_chooseWO, dtgvWOData);
+                txtQR.Focus();
+            }
+        }
+
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            VariablesSave.ResetEmployee();
+            VariablesSave.ResetDept();
+            VariablesSave.ResetMaterial();
+            this.Dispose();
+        }
     }
 }

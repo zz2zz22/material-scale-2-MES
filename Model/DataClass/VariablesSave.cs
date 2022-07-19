@@ -23,6 +23,10 @@ namespace MaterialScale2MES
 
         //DeptID Save
         public static String deptUUID { get; set; }
+        public static String JobOrdUUID { get; set; }
+
+        //Job order material UUIDs save 
+        public static String[] MatOrder { get; set; } 
 
         //Reset Employee Savedata
         public static void ResetEmployee()
@@ -45,7 +49,14 @@ namespace MaterialScale2MES
         //Reset Dept Savedata
         public static void ResetDept()
         {
+            JobOrdUUID = null;
             deptUUID = null;
+        }
+
+        //Reset JobOrd Mat Savedata 
+        public static void ResetJobOrdMat()
+        {
+            MatOrder = null;
         }
     }
 }

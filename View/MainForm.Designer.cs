@@ -38,24 +38,40 @@ namespace MaterialScale2MES
             this.lb_lbEmpCode = new System.Windows.Forms.Label();
             this.lb_lbEmpName = new System.Windows.Forms.Label();
             this.gbx_chooseWO = new System.Windows.Forms.GroupBox();
+            this.txb_searchOrder = new System.Windows.Forms.TextBox();
             this.btn_reselectWO = new System.Windows.Forms.Button();
             this.lb_matCode = new System.Windows.Forms.Label();
             this.lb_lbMatCode = new System.Windows.Forms.Label();
             this.lb_lbChooseWOInstruction = new System.Windows.Forms.Label();
             this.gbx_informationWO = new System.Windows.Forms.GroupBox();
-            this.dtgv_allScannedMat = new System.Windows.Forms.DataGridView();
-            this.lb_dispatchQty = new System.Windows.Forms.Label();
-            this.lb_lbDispatchQuantity = new System.Windows.Forms.Label();
-            this.lb_remainQty = new System.Windows.Forms.Label();
+            this.btn_Undo = new System.Windows.Forms.Button();
+            this.pnl_scaleWait = new System.Windows.Forms.Panel();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.lb_lbScaleQuantity = new System.Windows.Forms.Label();
+            this.lb_lbSumScaleQuantity = new System.Windows.Forms.Label();
+            this.lb_sumScaleQty = new System.Windows.Forms.Label();
+            this.lb_scaleQty = new System.Windows.Forms.Label();
             this.lb_finishQty = new System.Windows.Forms.Label();
+            this.lb_lbFinishQuantity = new System.Windows.Forms.Label();
+            this.lb_scanLOTPO = new System.Windows.Forms.Label();
+            this.lb_scanMatExpiryDate = new System.Windows.Forms.Label();
+            this.lb_scanMatCode = new System.Windows.Forms.Label();
+            this.btn_save2MES = new System.Windows.Forms.Button();
+            this.lb_lbLOTPO = new System.Windows.Forms.Label();
+            this.lb_lbExpiryDate = new System.Windows.Forms.Label();
+            this.lb_lbScanMaterialCode = new System.Windows.Forms.Label();
+            this.dtgv_allScannedMat = new System.Windows.Forms.DataGridView();
+            this.lb_createDate = new System.Windows.Forms.Label();
+            this.lb_lbCreateDate = new System.Windows.Forms.Label();
             this.lb_orderQty = new System.Windows.Forms.Label();
-            this.lb_prodCode = new System.Windows.Forms.Label();
-            this.lb_orderNo = new System.Windows.Forms.Label();
-            this.lb_lbOrderRemainQuantity = new System.Windows.Forms.Label();
-            this.lb_lbOrderFinishQty = new System.Windows.Forms.Label();
-            this.lb_lbOrderQuantity = new System.Windows.Forms.Label();
-            this.lb_lbProdCode = new System.Windows.Forms.Label();
-            this.lb_lbOrderNo = new System.Windows.Forms.Label();
+            this.lb_prodNo = new System.Windows.Forms.Label();
+            this.lb_jobNo = new System.Windows.Forms.Label();
+            this.lb_erpNo = new System.Windows.Forms.Label();
+            this.lb_lbOrderQty = new System.Windows.Forms.Label();
+            this.lb_lbProdNo = new System.Windows.Forms.Label();
+            this.lb_lbJobNo = new System.Windows.Forms.Label();
+            this.lb_lbERPNo = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.btn_portRefresh = new System.Windows.Forms.Button();
             this.btClose = new System.Windows.Forms.Button();
@@ -72,13 +88,17 @@ namespace MaterialScale2MES
             this.cbBaudRate = new System.Windows.Forms.ComboBox();
             this.cbDataBits = new System.Windows.Forms.ComboBox();
             this.cbComPort = new System.Windows.Forms.ComboBox();
+            this.panel2 = new System.Windows.Forms.Panel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.btn_saveTempMat = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dtgv_chooseWO)).BeginInit();
             this.gbx_chooseWO.SuspendLayout();
             this.gbx_informationWO.SuspendLayout();
+            this.pnl_scaleWait.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dtgv_allScannedMat)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -100,10 +120,13 @@ namespace MaterialScale2MES
             this.dtgv_chooseWO.AllowUserToAddRows = false;
             this.dtgv_chooseWO.AllowUserToDeleteRows = false;
             this.dtgv_chooseWO.AllowUserToOrderColumns = true;
+            this.dtgv_chooseWO.AllowUserToResizeRows = false;
+            this.dtgv_chooseWO.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
             this.dtgv_chooseWO.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dtgv_chooseWO.Enabled = false;
             this.dtgv_chooseWO.Location = new System.Drawing.Point(7, 103);
             this.dtgv_chooseWO.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.dtgv_chooseWO.MultiSelect = false;
             this.dtgv_chooseWO.Name = "dtgv_chooseWO";
             this.dtgv_chooseWO.ReadOnly = true;
             this.dtgv_chooseWO.RowHeadersVisible = false;
@@ -118,7 +141,8 @@ namespace MaterialScale2MES
             // 
             this.lb_empCode.AutoSize = true;
             this.lb_empCode.Font = new System.Drawing.Font("Times New Roman", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lb_empCode.Location = new System.Drawing.Point(684, 30);
+            this.lb_empCode.ForeColor = System.Drawing.SystemColors.Control;
+            this.lb_empCode.Location = new System.Drawing.Point(219, 28);
             this.lb_empCode.Name = "lb_empCode";
             this.lb_empCode.Size = new System.Drawing.Size(35, 31);
             this.lb_empCode.TabIndex = 2;
@@ -128,7 +152,8 @@ namespace MaterialScale2MES
             // 
             this.lb_empName.AutoSize = true;
             this.lb_empName.Font = new System.Drawing.Font("Times New Roman", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lb_empName.Location = new System.Drawing.Point(684, 74);
+            this.lb_empName.ForeColor = System.Drawing.SystemColors.Control;
+            this.lb_empName.Location = new System.Drawing.Point(219, 72);
             this.lb_empName.Name = "lb_empName";
             this.lb_empName.Size = new System.Drawing.Size(35, 31);
             this.lb_empName.TabIndex = 3;
@@ -138,7 +163,8 @@ namespace MaterialScale2MES
             // 
             this.lb_lbEmpCode.AutoSize = true;
             this.lb_lbEmpCode.Font = new System.Drawing.Font("Times New Roman", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lb_lbEmpCode.Location = new System.Drawing.Point(469, 30);
+            this.lb_lbEmpCode.ForeColor = System.Drawing.SystemColors.Control;
+            this.lb_lbEmpCode.Location = new System.Drawing.Point(4, 28);
             this.lb_lbEmpCode.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lb_lbEmpCode.Name = "lb_lbEmpCode";
             this.lb_lbEmpCode.Size = new System.Drawing.Size(191, 31);
@@ -149,7 +175,8 @@ namespace MaterialScale2MES
             // 
             this.lb_lbEmpName.AutoSize = true;
             this.lb_lbEmpName.Font = new System.Drawing.Font("Times New Roman", 15.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lb_lbEmpName.Location = new System.Drawing.Point(469, 74);
+            this.lb_lbEmpName.ForeColor = System.Drawing.SystemColors.Control;
+            this.lb_lbEmpName.Location = new System.Drawing.Point(4, 72);
             this.lb_lbEmpName.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lb_lbEmpName.Name = "lb_lbEmpName";
             this.lb_lbEmpName.Size = new System.Drawing.Size(197, 31);
@@ -158,25 +185,35 @@ namespace MaterialScale2MES
             // 
             // gbx_chooseWO
             // 
+            this.gbx_chooseWO.Controls.Add(this.txb_searchOrder);
             this.gbx_chooseWO.Controls.Add(this.btn_reselectWO);
             this.gbx_chooseWO.Controls.Add(this.lb_matCode);
             this.gbx_chooseWO.Controls.Add(this.lb_lbMatCode);
             this.gbx_chooseWO.Controls.Add(this.dtgv_chooseWO);
             this.gbx_chooseWO.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.gbx_chooseWO.Location = new System.Drawing.Point(16, 127);
-            this.gbx_chooseWO.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.gbx_chooseWO.Margin = new System.Windows.Forms.Padding(4);
             this.gbx_chooseWO.Name = "gbx_chooseWO";
-            this.gbx_chooseWO.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.gbx_chooseWO.Padding = new System.Windows.Forms.Padding(4);
             this.gbx_chooseWO.Size = new System.Drawing.Size(777, 452);
             this.gbx_chooseWO.TabIndex = 7;
             this.gbx_chooseWO.TabStop = false;
             this.gbx_chooseWO.Text = "CHỌN ĐƠN";
             // 
+            // txb_searchOrder
+            // 
+            this.txb_searchOrder.Location = new System.Drawing.Point(533, 68);
+            this.txb_searchOrder.Name = "txb_searchOrder";
+            this.txb_searchOrder.Size = new System.Drawing.Size(237, 30);
+            this.txb_searchOrder.TabIndex = 6;
+            this.txb_searchOrder.TextChanged += new System.EventHandler(this.txb_searchOrder_TextChanged);
+            this.txb_searchOrder.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txb_searchOrder_KeyPress);
+            // 
             // btn_reselectWO
             // 
             this.btn_reselectWO.Font = new System.Drawing.Font("Times New Roman", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_reselectWO.Location = new System.Drawing.Point(668, 33);
-            this.btn_reselectWO.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btn_reselectWO.Location = new System.Drawing.Point(348, 22);
+            this.btn_reselectWO.Margin = new System.Windows.Forms.Padding(4);
             this.btn_reselectWO.Name = "btn_reselectWO";
             this.btn_reselectWO.Size = new System.Drawing.Size(100, 44);
             this.btn_reselectWO.TabIndex = 5;
@@ -211,7 +248,7 @@ namespace MaterialScale2MES
             this.lb_lbChooseWOInstruction.AutoSize = true;
             this.lb_lbChooseWOInstruction.Font = new System.Drawing.Font("Times New Roman", 12F, ((System.Drawing.FontStyle)((System.Drawing.FontStyle.Bold | System.Drawing.FontStyle.Italic))), System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lb_lbChooseWOInstruction.ForeColor = System.Drawing.Color.Red;
-            this.lb_lbChooseWOInstruction.Location = new System.Drawing.Point(1073, 12);
+            this.lb_lbChooseWOInstruction.Location = new System.Drawing.Point(1079, 9);
             this.lb_lbChooseWOInstruction.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lb_lbChooseWOInstruction.Name = "lb_lbChooseWOInstruction";
             this.lb_lbChooseWOInstruction.Size = new System.Drawing.Size(553, 46);
@@ -221,27 +258,231 @@ namespace MaterialScale2MES
             // 
             // gbx_informationWO
             // 
-            this.gbx_informationWO.Controls.Add(this.dtgv_allScannedMat);
-            this.gbx_informationWO.Controls.Add(this.lb_dispatchQty);
-            this.gbx_informationWO.Controls.Add(this.lb_lbDispatchQuantity);
-            this.gbx_informationWO.Controls.Add(this.lb_remainQty);
+            this.gbx_informationWO.Controls.Add(this.btn_saveTempMat);
+            this.gbx_informationWO.Controls.Add(this.btn_Undo);
+            this.gbx_informationWO.Controls.Add(this.pnl_scaleWait);
             this.gbx_informationWO.Controls.Add(this.lb_finishQty);
+            this.gbx_informationWO.Controls.Add(this.lb_lbFinishQuantity);
+            this.gbx_informationWO.Controls.Add(this.lb_scanLOTPO);
+            this.gbx_informationWO.Controls.Add(this.lb_scanMatExpiryDate);
+            this.gbx_informationWO.Controls.Add(this.lb_scanMatCode);
+            this.gbx_informationWO.Controls.Add(this.btn_save2MES);
+            this.gbx_informationWO.Controls.Add(this.lb_lbLOTPO);
+            this.gbx_informationWO.Controls.Add(this.lb_lbExpiryDate);
+            this.gbx_informationWO.Controls.Add(this.lb_lbScanMaterialCode);
+            this.gbx_informationWO.Controls.Add(this.dtgv_allScannedMat);
+            this.gbx_informationWO.Controls.Add(this.lb_createDate);
+            this.gbx_informationWO.Controls.Add(this.lb_lbCreateDate);
             this.gbx_informationWO.Controls.Add(this.lb_orderQty);
-            this.gbx_informationWO.Controls.Add(this.lb_prodCode);
-            this.gbx_informationWO.Controls.Add(this.lb_orderNo);
-            this.gbx_informationWO.Controls.Add(this.lb_lbOrderRemainQuantity);
-            this.gbx_informationWO.Controls.Add(this.lb_lbOrderFinishQty);
-            this.gbx_informationWO.Controls.Add(this.lb_lbOrderQuantity);
-            this.gbx_informationWO.Controls.Add(this.lb_lbProdCode);
-            this.gbx_informationWO.Controls.Add(this.lb_lbOrderNo);
+            this.gbx_informationWO.Controls.Add(this.lb_prodNo);
+            this.gbx_informationWO.Controls.Add(this.lb_jobNo);
+            this.gbx_informationWO.Controls.Add(this.lb_erpNo);
+            this.gbx_informationWO.Controls.Add(this.lb_lbOrderQty);
+            this.gbx_informationWO.Controls.Add(this.lb_lbProdNo);
+            this.gbx_informationWO.Controls.Add(this.lb_lbJobNo);
+            this.gbx_informationWO.Controls.Add(this.lb_lbERPNo);
             this.gbx_informationWO.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.gbx_informationWO.Location = new System.Drawing.Point(801, 127);
-            this.gbx_informationWO.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.gbx_informationWO.Margin = new System.Windows.Forms.Padding(4);
             this.gbx_informationWO.Name = "gbx_informationWO";
-            this.gbx_informationWO.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.gbx_informationWO.Padding = new System.Windows.Forms.Padding(4);
             this.gbx_informationWO.Size = new System.Drawing.Size(868, 708);
             this.gbx_informationWO.TabIndex = 8;
             this.gbx_informationWO.TabStop = false;
+            // 
+            // btn_Undo
+            // 
+            this.btn_Undo.BackColor = System.Drawing.Color.Red;
+            this.btn_Undo.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_Undo.ForeColor = System.Drawing.Color.Yellow;
+            this.btn_Undo.Location = new System.Drawing.Point(533, 429);
+            this.btn_Undo.Name = "btn_Undo";
+            this.btn_Undo.Size = new System.Drawing.Size(134, 43);
+            this.btn_Undo.TabIndex = 34;
+            this.btn_Undo.Text = "UNDO";
+            this.btn_Undo.UseVisualStyleBackColor = false;
+            this.btn_Undo.Click += new System.EventHandler(this.btn_Undo_Click);
+            // 
+            // pnl_scaleWait
+            // 
+            this.pnl_scaleWait.BackColor = System.Drawing.Color.Black;
+            this.pnl_scaleWait.Controls.Add(this.label7);
+            this.pnl_scaleWait.Controls.Add(this.label6);
+            this.pnl_scaleWait.Controls.Add(this.lb_lbScaleQuantity);
+            this.pnl_scaleWait.Controls.Add(this.lb_lbSumScaleQuantity);
+            this.pnl_scaleWait.Controls.Add(this.lb_sumScaleQty);
+            this.pnl_scaleWait.Controls.Add(this.lb_scaleQty);
+            this.pnl_scaleWait.Location = new System.Drawing.Point(8, 566);
+            this.pnl_scaleWait.Name = "pnl_scaleWait";
+            this.pnl_scaleWait.Size = new System.Drawing.Size(852, 129);
+            this.pnl_scaleWait.TabIndex = 33;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label7.ForeColor = System.Drawing.SystemColors.Control;
+            this.label7.Location = new System.Drawing.Point(728, 84);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(49, 26);
+            this.label7.TabIndex = 32;
+            this.label7.Text = "KG";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label6.ForeColor = System.Drawing.SystemColors.Control;
+            this.label6.Location = new System.Drawing.Point(269, 84);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(49, 26);
+            this.label6.TabIndex = 31;
+            this.label6.Text = "KG";
+            // 
+            // lb_lbScaleQuantity
+            // 
+            this.lb_lbScaleQuantity.AutoSize = true;
+            this.lb_lbScaleQuantity.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_lbScaleQuantity.ForeColor = System.Drawing.SystemColors.Control;
+            this.lb_lbScaleQuantity.Location = new System.Drawing.Point(16, 19);
+            this.lb_lbScaleQuantity.Name = "lb_lbScaleQuantity";
+            this.lb_lbScaleQuantity.Size = new System.Drawing.Size(292, 23);
+            this.lb_lbScaleQuantity.TabIndex = 19;
+            this.lb_lbScaleQuantity.Text = "Khối lượng thực tế vừa cân được:";
+            // 
+            // lb_lbSumScaleQuantity
+            // 
+            this.lb_lbSumScaleQuantity.AutoSize = true;
+            this.lb_lbSumScaleQuantity.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_lbSumScaleQuantity.ForeColor = System.Drawing.SystemColors.Control;
+            this.lb_lbSumScaleQuantity.Location = new System.Drawing.Point(411, 19);
+            this.lb_lbSumScaleQuantity.Name = "lb_lbSumScaleQuantity";
+            this.lb_lbSumScaleQuantity.Size = new System.Drawing.Size(317, 23);
+            this.lb_lbSumScaleQuantity.TabIndex = 21;
+            this.lb_lbSumScaleQuantity.Text = "Tổng khối lượng thực tế sau khi cân:";
+            // 
+            // lb_sumScaleQty
+            // 
+            this.lb_sumScaleQty.AutoSize = true;
+            this.lb_sumScaleQty.Font = new System.Drawing.Font("Times New Roman", 28.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_sumScaleQty.ForeColor = System.Drawing.SystemColors.Control;
+            this.lb_sumScaleQty.Location = new System.Drawing.Point(482, 61);
+            this.lb_sumScaleQty.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lb_sumScaleQty.Name = "lb_sumScaleQty";
+            this.lb_sumScaleQty.Size = new System.Drawing.Size(48, 55);
+            this.lb_sumScaleQty.TabIndex = 29;
+            this.lb_sumScaleQty.Text = "0";
+            // 
+            // lb_scaleQty
+            // 
+            this.lb_scaleQty.AutoSize = true;
+            this.lb_scaleQty.Font = new System.Drawing.Font("Times New Roman", 28.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_scaleQty.ForeColor = System.Drawing.SystemColors.Control;
+            this.lb_scaleQty.Location = new System.Drawing.Point(50, 61);
+            this.lb_scaleQty.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lb_scaleQty.Name = "lb_scaleQty";
+            this.lb_scaleQty.Size = new System.Drawing.Size(48, 55);
+            this.lb_scaleQty.TabIndex = 28;
+            this.lb_scaleQty.Text = "0";
+            // 
+            // lb_finishQty
+            // 
+            this.lb_finishQty.AutoSize = true;
+            this.lb_finishQty.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_finishQty.Location = new System.Drawing.Point(187, 149);
+            this.lb_finishQty.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lb_finishQty.Name = "lb_finishQty";
+            this.lb_finishQty.Size = new System.Drawing.Size(25, 23);
+            this.lb_finishQty.TabIndex = 32;
+            this.lb_finishQty.Text = "...";
+            // 
+            // lb_lbFinishQuantity
+            // 
+            this.lb_lbFinishQuantity.AutoSize = true;
+            this.lb_lbFinishQuantity.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_lbFinishQuantity.Location = new System.Drawing.Point(19, 150);
+            this.lb_lbFinishQuantity.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lb_lbFinishQuantity.Name = "lb_lbFinishQuantity";
+            this.lb_lbFinishQuantity.Size = new System.Drawing.Size(151, 22);
+            this.lb_lbFinishQuantity.TabIndex = 31;
+            this.lb_lbFinishQuantity.Text = "Số lượng đã làm :";
+            // 
+            // lb_scanLOTPO
+            // 
+            this.lb_scanLOTPO.AutoSize = true;
+            this.lb_scanLOTPO.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_scanLOTPO.Location = new System.Drawing.Point(479, 529);
+            this.lb_scanLOTPO.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lb_scanLOTPO.Name = "lb_scanLOTPO";
+            this.lb_scanLOTPO.Size = new System.Drawing.Size(25, 23);
+            this.lb_scanLOTPO.TabIndex = 26;
+            this.lb_scanLOTPO.Text = "...";
+            // 
+            // lb_scanMatExpiryDate
+            // 
+            this.lb_scanMatExpiryDate.AutoSize = true;
+            this.lb_scanMatExpiryDate.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_scanMatExpiryDate.Location = new System.Drawing.Point(148, 529);
+            this.lb_scanMatExpiryDate.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lb_scanMatExpiryDate.Name = "lb_scanMatExpiryDate";
+            this.lb_scanMatExpiryDate.Size = new System.Drawing.Size(25, 23);
+            this.lb_scanMatExpiryDate.TabIndex = 25;
+            this.lb_scanMatExpiryDate.Text = "...";
+            // 
+            // lb_scanMatCode
+            // 
+            this.lb_scanMatCode.AutoSize = true;
+            this.lb_scanMatCode.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_scanMatCode.Location = new System.Drawing.Point(186, 493);
+            this.lb_scanMatCode.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lb_scanMatCode.Name = "lb_scanMatCode";
+            this.lb_scanMatCode.Size = new System.Drawing.Size(25, 23);
+            this.lb_scanMatCode.TabIndex = 24;
+            this.lb_scanMatCode.Text = "...";
+            // 
+            // btn_save2MES
+            // 
+            this.btn_save2MES.BackColor = System.Drawing.Color.Yellow;
+            this.btn_save2MES.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_save2MES.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.btn_save2MES.Location = new System.Drawing.Point(716, 114);
+            this.btn_save2MES.Margin = new System.Windows.Forms.Padding(4);
+            this.btn_save2MES.Name = "btn_save2MES";
+            this.btn_save2MES.Size = new System.Drawing.Size(144, 66);
+            this.btn_save2MES.TabIndex = 7;
+            this.btn_save2MES.Text = "LƯU MES";
+            this.btn_save2MES.UseVisualStyleBackColor = false;
+            this.btn_save2MES.Click += new System.EventHandler(this.btn_save2MES_Click);
+            // 
+            // lb_lbLOTPO
+            // 
+            this.lb_lbLOTPO.AutoSize = true;
+            this.lb_lbLOTPO.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_lbLOTPO.Location = new System.Drawing.Point(362, 530);
+            this.lb_lbLOTPO.Name = "lb_lbLOTPO";
+            this.lb_lbLOTPO.Size = new System.Drawing.Size(110, 22);
+            this.lb_lbLOTPO.TabIndex = 23;
+            this.lb_lbLOTPO.Text = "Số LOT/PO:";
+            // 
+            // lb_lbExpiryDate
+            // 
+            this.lb_lbExpiryDate.AutoSize = true;
+            this.lb_lbExpiryDate.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_lbExpiryDate.Location = new System.Drawing.Point(24, 530);
+            this.lb_lbExpiryDate.Name = "lb_lbExpiryDate";
+            this.lb_lbExpiryDate.Size = new System.Drawing.Size(117, 22);
+            this.lb_lbExpiryDate.TabIndex = 22;
+            this.lb_lbExpiryDate.Text = "Ngày hết hạn:";
+            // 
+            // lb_lbScanMaterialCode
+            // 
+            this.lb_lbScanMaterialCode.AutoSize = true;
+            this.lb_lbScanMaterialCode.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_lbScanMaterialCode.Location = new System.Drawing.Point(22, 494);
+            this.lb_lbScanMaterialCode.Name = "lb_lbScanMaterialCode";
+            this.lb_lbScanMaterialCode.Size = new System.Drawing.Size(157, 22);
+            this.lb_lbScanMaterialCode.TabIndex = 17;
+            this.lb_lbScanMaterialCode.Text = "Mã liệu đang quét:";
             // 
             // dtgv_allScannedMat
             // 
@@ -249,144 +490,126 @@ namespace MaterialScale2MES
             this.dtgv_allScannedMat.AllowUserToDeleteRows = false;
             this.dtgv_allScannedMat.AllowUserToOrderColumns = true;
             this.dtgv_allScannedMat.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dtgv_allScannedMat.Location = new System.Drawing.Point(24, 224);
-            this.dtgv_allScannedMat.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.dtgv_allScannedMat.Location = new System.Drawing.Point(8, 188);
+            this.dtgv_allScannedMat.Margin = new System.Windows.Forms.Padding(4);
+            this.dtgv_allScannedMat.MultiSelect = false;
             this.dtgv_allScannedMat.Name = "dtgv_allScannedMat";
+            this.dtgv_allScannedMat.ReadOnly = true;
+            this.dtgv_allScannedMat.RowHeadersVisible = false;
             this.dtgv_allScannedMat.RowHeadersWidth = 51;
-            this.dtgv_allScannedMat.Size = new System.Drawing.Size(836, 222);
+            this.dtgv_allScannedMat.Size = new System.Drawing.Size(852, 234);
             this.dtgv_allScannedMat.TabIndex = 16;
+            this.dtgv_allScannedMat.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dtgv_allScannedMat_CellContentClick);
             // 
-            // lb_dispatchQty
+            // lb_createDate
             // 
-            this.lb_dispatchQty.AutoSize = true;
-            this.lb_dispatchQty.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lb_dispatchQty.Location = new System.Drawing.Point(241, 170);
-            this.lb_dispatchQty.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lb_dispatchQty.Name = "lb_dispatchQty";
-            this.lb_dispatchQty.Size = new System.Drawing.Size(25, 23);
-            this.lb_dispatchQty.TabIndex = 15;
-            this.lb_dispatchQty.Text = "...";
+            this.lb_createDate.AutoSize = true;
+            this.lb_createDate.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_createDate.Location = new System.Drawing.Point(438, 112);
+            this.lb_createDate.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lb_createDate.Name = "lb_createDate";
+            this.lb_createDate.Size = new System.Drawing.Size(25, 23);
+            this.lb_createDate.TabIndex = 15;
+            this.lb_createDate.Text = "...";
             // 
-            // lb_lbDispatchQuantity
+            // lb_lbCreateDate
             // 
-            this.lb_lbDispatchQuantity.AutoSize = true;
-            this.lb_lbDispatchQuantity.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lb_lbDispatchQuantity.Location = new System.Drawing.Point(19, 170);
-            this.lb_lbDispatchQuantity.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lb_lbDispatchQuantity.Name = "lb_lbDispatchQuantity";
-            this.lb_lbDispatchQuantity.Size = new System.Drawing.Size(210, 22);
-            this.lb_lbDispatchQuantity.TabIndex = 14;
-            this.lb_lbDispatchQuantity.Text = "Số lượng sinh quản phát :";
-            // 
-            // lb_remainQty
-            // 
-            this.lb_remainQty.AutoSize = true;
-            this.lb_remainQty.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lb_remainQty.Location = new System.Drawing.Point(657, 170);
-            this.lb_remainQty.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lb_remainQty.Name = "lb_remainQty";
-            this.lb_remainQty.Size = new System.Drawing.Size(25, 23);
-            this.lb_remainQty.TabIndex = 13;
-            this.lb_remainQty.Text = "...";
-            // 
-            // lb_finishQty
-            // 
-            this.lb_finishQty.AutoSize = true;
-            this.lb_finishQty.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lb_finishQty.Location = new System.Drawing.Point(657, 126);
-            this.lb_finishQty.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lb_finishQty.Name = "lb_finishQty";
-            this.lb_finishQty.Size = new System.Drawing.Size(25, 23);
-            this.lb_finishQty.TabIndex = 12;
-            this.lb_finishQty.Text = "...";
+            this.lb_lbCreateDate.AutoSize = true;
+            this.lb_lbCreateDate.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_lbCreateDate.Location = new System.Drawing.Point(339, 113);
+            this.lb_lbCreateDate.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lb_lbCreateDate.Name = "lb_lbCreateDate";
+            this.lb_lbCreateDate.Size = new System.Drawing.Size(91, 22);
+            this.lb_lbCreateDate.TabIndex = 14;
+            this.lb_lbCreateDate.Text = "Ngày tạo :";
             // 
             // lb_orderQty
             // 
             this.lb_orderQty.AutoSize = true;
             this.lb_orderQty.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lb_orderQty.Location = new System.Drawing.Point(241, 126);
+            this.lb_orderQty.Location = new System.Drawing.Point(187, 112);
             this.lb_orderQty.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.lb_orderQty.Name = "lb_orderQty";
             this.lb_orderQty.Size = new System.Drawing.Size(25, 23);
-            this.lb_orderQty.TabIndex = 10;
+            this.lb_orderQty.TabIndex = 12;
             this.lb_orderQty.Text = "...";
             // 
-            // lb_prodCode
+            // lb_prodNo
             // 
-            this.lb_prodCode.AutoSize = true;
-            this.lb_prodCode.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lb_prodCode.Location = new System.Drawing.Point(215, 78);
-            this.lb_prodCode.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lb_prodCode.Name = "lb_prodCode";
-            this.lb_prodCode.Size = new System.Drawing.Size(25, 23);
-            this.lb_prodCode.TabIndex = 8;
-            this.lb_prodCode.Text = "...";
+            this.lb_prodNo.AutoSize = true;
+            this.lb_prodNo.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_prodNo.Location = new System.Drawing.Point(200, 71);
+            this.lb_prodNo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lb_prodNo.Name = "lb_prodNo";
+            this.lb_prodNo.Size = new System.Drawing.Size(25, 23);
+            this.lb_prodNo.TabIndex = 10;
+            this.lb_prodNo.Text = "...";
             // 
-            // lb_orderNo
+            // lb_jobNo
             // 
-            this.lb_orderNo.AutoSize = true;
-            this.lb_orderNo.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lb_orderNo.Location = new System.Drawing.Point(215, 33);
-            this.lb_orderNo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lb_orderNo.Name = "lb_orderNo";
-            this.lb_orderNo.Size = new System.Drawing.Size(25, 23);
-            this.lb_orderNo.TabIndex = 7;
-            this.lb_orderNo.Text = "...";
+            this.lb_jobNo.AutoSize = true;
+            this.lb_jobNo.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_jobNo.Location = new System.Drawing.Point(529, 32);
+            this.lb_jobNo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lb_jobNo.Name = "lb_jobNo";
+            this.lb_jobNo.Size = new System.Drawing.Size(25, 23);
+            this.lb_jobNo.TabIndex = 8;
+            this.lb_jobNo.Text = "...";
             // 
-            // lb_lbOrderRemainQuantity
+            // lb_erpNo
             // 
-            this.lb_lbOrderRemainQuantity.AutoSize = true;
-            this.lb_lbOrderRemainQuantity.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lb_lbOrderRemainQuantity.Location = new System.Drawing.Point(437, 170);
-            this.lb_lbOrderRemainQuantity.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lb_lbOrderRemainQuantity.Name = "lb_lbOrderRemainQuantity";
-            this.lb_lbOrderRemainQuantity.Size = new System.Drawing.Size(152, 22);
-            this.lb_lbOrderRemainQuantity.TabIndex = 6;
-            this.lb_lbOrderRemainQuantity.Text = "Số lượng còn lại :";
+            this.lb_erpNo.AutoSize = true;
+            this.lb_erpNo.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_erpNo.Location = new System.Drawing.Point(114, 32);
+            this.lb_erpNo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lb_erpNo.Name = "lb_erpNo";
+            this.lb_erpNo.Size = new System.Drawing.Size(25, 23);
+            this.lb_erpNo.TabIndex = 7;
+            this.lb_erpNo.Text = "...";
             // 
-            // lb_lbOrderFinishQty
+            // lb_lbOrderQty
             // 
-            this.lb_lbOrderFinishQty.AutoSize = true;
-            this.lb_lbOrderFinishQty.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lb_lbOrderFinishQty.Location = new System.Drawing.Point(437, 126);
-            this.lb_lbOrderFinishQty.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lb_lbOrderFinishQty.Name = "lb_lbOrderFinishQty";
-            this.lb_lbOrderFinishQty.Size = new System.Drawing.Size(205, 22);
-            this.lb_lbOrderFinishQty.TabIndex = 5;
-            this.lb_lbOrderFinishQty.Text = "Số lượng đã hoàn thành :";
+            this.lb_lbOrderQty.AutoSize = true;
+            this.lb_lbOrderQty.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_lbOrderQty.Location = new System.Drawing.Point(19, 113);
+            this.lb_lbOrderQty.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lb_lbOrderQty.Name = "lb_lbOrderQty";
+            this.lb_lbOrderQty.Size = new System.Drawing.Size(160, 22);
+            this.lb_lbOrderQty.TabIndex = 5;
+            this.lb_lbOrderQty.Text = "Số lượng của đơn :";
             // 
-            // lb_lbOrderQuantity
+            // lb_lbProdNo
             // 
-            this.lb_lbOrderQuantity.AutoSize = true;
-            this.lb_lbOrderQuantity.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lb_lbOrderQuantity.Location = new System.Drawing.Point(19, 126);
-            this.lb_lbOrderQuantity.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lb_lbOrderQuantity.Name = "lb_lbOrderQuantity";
-            this.lb_lbOrderQuantity.Size = new System.Drawing.Size(160, 22);
-            this.lb_lbOrderQuantity.TabIndex = 4;
-            this.lb_lbOrderQuantity.Text = "Số lượng của đơn :";
+            this.lb_lbProdNo.AutoSize = true;
+            this.lb_lbProdNo.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_lbProdNo.Location = new System.Drawing.Point(19, 72);
+            this.lb_lbProdNo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lb_lbProdNo.Name = "lb_lbProdNo";
+            this.lb_lbProdNo.Size = new System.Drawing.Size(173, 22);
+            this.lb_lbProdNo.TabIndex = 4;
+            this.lb_lbProdNo.Text = "Mã bán thành phẩm :";
             // 
-            // lb_lbProdCode
+            // lb_lbJobNo
             // 
-            this.lb_lbProdCode.AutoSize = true;
-            this.lb_lbProdCode.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lb_lbProdCode.Location = new System.Drawing.Point(19, 78);
-            this.lb_lbProdCode.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lb_lbProdCode.Name = "lb_lbProdCode";
-            this.lb_lbProdCode.Size = new System.Drawing.Size(173, 22);
-            this.lb_lbProdCode.TabIndex = 2;
-            this.lb_lbProdCode.Text = "Mã bán thành phẩm :";
+            this.lb_lbJobNo.AutoSize = true;
+            this.lb_lbJobNo.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_lbJobNo.Location = new System.Drawing.Point(439, 34);
+            this.lb_lbJobNo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lb_lbJobNo.Name = "lb_lbJobNo";
+            this.lb_lbJobNo.Size = new System.Drawing.Size(82, 22);
+            this.lb_lbJobNo.TabIndex = 2;
+            this.lb_lbJobNo.Text = "Mã đơn :";
             // 
-            // lb_lbOrderNo
+            // lb_lbERPNo
             // 
-            this.lb_lbOrderNo.AutoSize = true;
-            this.lb_lbOrderNo.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lb_lbOrderNo.Location = new System.Drawing.Point(19, 33);
-            this.lb_lbOrderNo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.lb_lbOrderNo.Name = "lb_lbOrderNo";
-            this.lb_lbOrderNo.Size = new System.Drawing.Size(166, 22);
-            this.lb_lbOrderNo.TabIndex = 0;
-            this.lb_lbOrderNo.Text = "Mã đơn đang chọn :";
+            this.lb_lbERPNo.AutoSize = true;
+            this.lb_lbERPNo.Font = new System.Drawing.Font("Times New Roman", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lb_lbERPNo.Location = new System.Drawing.Point(19, 33);
+            this.lb_lbERPNo.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lb_lbERPNo.Name = "lb_lbERPNo";
+            this.lb_lbERPNo.Size = new System.Drawing.Size(87, 22);
+            this.lb_lbERPNo.TabIndex = 0;
+            this.lb_lbERPNo.Text = "Mã ERP :";
             // 
             // groupBox1
             // 
@@ -396,9 +619,9 @@ namespace MaterialScale2MES
             this.groupBox1.Controls.Add(this.progressBar1);
             this.groupBox1.Controls.Add(this.groupBox2);
             this.groupBox1.Location = new System.Drawing.Point(16, 586);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(4);
             this.groupBox1.Size = new System.Drawing.Size(777, 249);
             this.groupBox1.TabIndex = 9;
             this.groupBox1.TabStop = false;
@@ -597,37 +820,60 @@ namespace MaterialScale2MES
             this.cbComPort.TabIndex = 0;
             this.cbComPort.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.cbComPort_KeyPress);
             // 
+            // panel2
+            // 
+            this.panel2.BackColor = System.Drawing.SystemColors.ControlText;
+            this.panel2.Controls.Add(this.lb_lbEmpCode);
+            this.panel2.Controls.Add(this.lb_empCode);
+            this.panel2.Controls.Add(this.lb_empName);
+            this.panel2.Controls.Add(this.lb_lbEmpName);
+            this.panel2.Location = new System.Drawing.Point(398, 2);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(673, 127);
+            this.panel2.TabIndex = 10;
+            // 
             // pictureBox1
             // 
             this.pictureBox1.Image = global::MaterialScale2MES.Properties.Resources.logoTechlinkFix;
-            this.pictureBox1.Location = new System.Drawing.Point(-13, -54);
-            this.pictureBox1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.pictureBox1.Location = new System.Drawing.Point(-32, -54);
+            this.pictureBox1.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(444, 210);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pictureBox1.TabIndex = 4;
             this.pictureBox1.TabStop = false;
             // 
+            // btn_saveTempMat
+            // 
+            this.btn_saveTempMat.BackColor = System.Drawing.Color.Black;
+            this.btn_saveTempMat.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_saveTempMat.ForeColor = System.Drawing.SystemColors.Control;
+            this.btn_saveTempMat.Location = new System.Drawing.Point(716, 429);
+            this.btn_saveTempMat.Name = "btn_saveTempMat";
+            this.btn_saveTempMat.Size = new System.Drawing.Size(134, 43);
+            this.btn_saveTempMat.TabIndex = 35;
+            this.btn_saveTempMat.Text = "DONE";
+            this.btn_saveTempMat.UseVisualStyleBackColor = false;
+            this.btn_saveTempMat.Click += new System.EventHandler(this.btn_saveTempMat_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1685, 838);
+            this.Controls.Add(this.panel2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.gbx_informationWO);
             this.Controls.Add(this.lb_lbChooseWOInstruction);
             this.Controls.Add(this.gbx_chooseWO);
-            this.Controls.Add(this.lb_lbEmpName);
-            this.Controls.Add(this.lb_lbEmpCode);
             this.Controls.Add(this.pictureBox1);
-            this.Controls.Add(this.lb_empName);
-            this.Controls.Add(this.lb_empCode);
             this.Controls.Add(this.txtQR);
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "Form1";
+            this.Text = "Actual Material Info -- MES system";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.Shown += new System.EventHandler(this.MainForm_Shown);
             ((System.ComponentModel.ISupportInitialize)(this.dtgv_chooseWO)).EndInit();
@@ -635,10 +881,14 @@ namespace MaterialScale2MES
             this.gbx_chooseWO.PerformLayout();
             this.gbx_informationWO.ResumeLayout(false);
             this.gbx_informationWO.PerformLayout();
+            this.pnl_scaleWait.ResumeLayout(false);
+            this.pnl_scaleWait.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dtgv_allScannedMat)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            this.panel2.ResumeLayout(false);
+            this.panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -677,19 +927,37 @@ namespace MaterialScale2MES
         private System.Windows.Forms.ComboBox cbDataBits;
         private System.Windows.Forms.ComboBox cbComPort;
         private System.Windows.Forms.Button btn_reselectWO;
-        private System.Windows.Forms.Label lb_lbOrderNo;
-        private System.Windows.Forms.Label lb_remainQty;
-        private System.Windows.Forms.Label lb_finishQty;
+        private System.Windows.Forms.Label lb_lbERPNo;
         private System.Windows.Forms.Label lb_orderQty;
-        private System.Windows.Forms.Label lb_prodCode;
-        private System.Windows.Forms.Label lb_orderNo;
-        private System.Windows.Forms.Label lb_lbOrderRemainQuantity;
-        private System.Windows.Forms.Label lb_lbOrderFinishQty;
-        private System.Windows.Forms.Label lb_lbOrderQuantity;
-        private System.Windows.Forms.Label lb_lbProdCode;
-        private System.Windows.Forms.Label lb_dispatchQty;
-        private System.Windows.Forms.Label lb_lbDispatchQuantity;
+        private System.Windows.Forms.Label lb_prodNo;
+        private System.Windows.Forms.Label lb_jobNo;
+        private System.Windows.Forms.Label lb_erpNo;
+        private System.Windows.Forms.Label lb_lbOrderQty;
+        private System.Windows.Forms.Label lb_lbProdNo;
+        private System.Windows.Forms.Label lb_lbJobNo;
+        private System.Windows.Forms.Label lb_createDate;
+        private System.Windows.Forms.Label lb_lbCreateDate;
         private System.Windows.Forms.DataGridView dtgv_allScannedMat;
+        private System.Windows.Forms.TextBox txb_searchOrder;
+        private System.Windows.Forms.Button btn_save2MES;
+        private System.Windows.Forms.Label lb_lbLOTPO;
+        private System.Windows.Forms.Label lb_lbExpiryDate;
+        private System.Windows.Forms.Label lb_lbSumScaleQuantity;
+        private System.Windows.Forms.Label lb_lbScaleQuantity;
+        private System.Windows.Forms.Label lb_lbScanMaterialCode;
+        private System.Windows.Forms.Label lb_sumScaleQty;
+        private System.Windows.Forms.Label lb_scaleQty;
+        private System.Windows.Forms.Label lb_scanLOTPO;
+        private System.Windows.Forms.Label lb_scanMatExpiryDate;
+        private System.Windows.Forms.Label lb_scanMatCode;
+        private System.Windows.Forms.Label lb_finishQty;
+        private System.Windows.Forms.Label lb_lbFinishQuantity;
+        private System.Windows.Forms.Panel pnl_scaleWait;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Label label7;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Button btn_Undo;
+        private System.Windows.Forms.Button btn_saveTempMat;
     }
 }
 
