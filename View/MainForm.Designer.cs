@@ -90,7 +90,6 @@ namespace MaterialScale2MES
             this.cbComPort = new System.Windows.Forms.ComboBox();
             this.panel2 = new System.Windows.Forms.Panel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.btn_saveTempMat = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dtgv_chooseWO)).BeginInit();
             this.gbx_chooseWO.SuspendLayout();
             this.gbx_informationWO.SuspendLayout();
@@ -258,7 +257,6 @@ namespace MaterialScale2MES
             // 
             // gbx_informationWO
             // 
-            this.gbx_informationWO.Controls.Add(this.btn_saveTempMat);
             this.gbx_informationWO.Controls.Add(this.btn_Undo);
             this.gbx_informationWO.Controls.Add(this.pnl_scaleWait);
             this.gbx_informationWO.Controls.Add(this.lb_finishQty);
@@ -295,7 +293,7 @@ namespace MaterialScale2MES
             this.btn_Undo.BackColor = System.Drawing.Color.Red;
             this.btn_Undo.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.btn_Undo.ForeColor = System.Drawing.Color.Yellow;
-            this.btn_Undo.Location = new System.Drawing.Point(533, 429);
+            this.btn_Undo.Location = new System.Drawing.Point(727, 429);
             this.btn_Undo.Name = "btn_Undo";
             this.btn_Undo.Size = new System.Drawing.Size(134, 43);
             this.btn_Undo.TabIndex = 34;
@@ -843,19 +841,6 @@ namespace MaterialScale2MES
             this.pictureBox1.TabIndex = 4;
             this.pictureBox1.TabStop = false;
             // 
-            // btn_saveTempMat
-            // 
-            this.btn_saveTempMat.BackColor = System.Drawing.Color.Black;
-            this.btn_saveTempMat.Font = new System.Drawing.Font("Times New Roman", 13.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_saveTempMat.ForeColor = System.Drawing.SystemColors.Control;
-            this.btn_saveTempMat.Location = new System.Drawing.Point(716, 429);
-            this.btn_saveTempMat.Name = "btn_saveTempMat";
-            this.btn_saveTempMat.Size = new System.Drawing.Size(134, 43);
-            this.btn_saveTempMat.TabIndex = 35;
-            this.btn_saveTempMat.Text = "DONE";
-            this.btn_saveTempMat.UseVisualStyleBackColor = false;
-            this.btn_saveTempMat.Click += new System.EventHandler(this.btn_saveTempMat_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -957,7 +942,6 @@ namespace MaterialScale2MES
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button btn_Undo;
-        private System.Windows.Forms.Button btn_saveTempMat;
     }
 }
 

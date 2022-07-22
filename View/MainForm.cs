@@ -14,9 +14,14 @@ namespace MaterialScale2MES
 {
     public partial class MainForm : Form
     {
+        /// <summary>
+        /// Initialization Zone (Create datatable, Init variables, Load form... )
+        /// </summary>
+        #region Initialization 
+        //Init variables
         DataTable tempMat = new DataTable();
         DataTable dtgvWOData = new DataTable();
-        //Init variables
+
         string dataIn;
         double totalScaleWeight = 0;
         string tempMatCode;
@@ -25,28 +30,30 @@ namespace MaterialScale2MES
         int subRowIndex = -1;
         bool isLoad2DTGV = false;
         bool isAddSubMat = false;
-        
+
         public MainForm()
         {
             InitializeComponent();
 
+            //Load tempMat datatable to form
             addTempMatColumn();
             SupportClass.LoadData2DTGVScannedMat(dtgv_allScannedMat, tempMat);
 
-            var editButtonColumn = new DataGridViewButtonColumn();
+            //Adding 2 button column to add Subtitute Material & delete row action
+            var editButtonColumn = new DataGridViewButtonColumn(); // Adding subtitute material
             editButtonColumn.Text = "Liệu phụ";
             editButtonColumn.UseColumnTextForButtonValue = true;
             dtgv_allScannedMat.Columns.Add(editButtonColumn);
             
 
-            var deleteButtonColumn = new DataGridViewButtonColumn();
+            var deleteButtonColumn = new DataGridViewButtonColumn(); // Delete row 
             deleteButtonColumn.Text = "X";
             deleteButtonColumn.UseColumnTextForButtonValue = true;
             deleteButtonColumn.Width = 25;
             dtgv_allScannedMat.Columns.Add(deleteButtonColumn);
         }
 
-        public void addTempMatColumn()
+        public void addTempMatColumn() //Init columns into tempMat datatable to add scale data for saving to MES system
         {
             DataColumn tempMatCol;
             tempMatCol = new DataColumn();
@@ -70,11 +77,10 @@ namespace MaterialScale2MES
             tempMat.Columns.Add(tempMatCol);
 
             tempMatCol = new DataColumn();
-            tempMatCol.DataType = Type.GetType("System.String");
+            tempMatCol.DataType = Type.GetType("System.Decimal");
             tempMatCol.ColumnName = "SumScale";
             tempMat.Columns.Add(tempMatCol);
         }
-
         private void MainForm_Load(object sender, EventArgs e)
         {
             cbComPort.Items.Clear();
@@ -90,12 +96,12 @@ namespace MaterialScale2MES
             cbStopBits.SelectedIndex = 0;
             cbParityBits.SelectedIndex = 0;
         }
-        //////////
-        //////////
-        //////////Kết nối với cân / Scale Connect
-        //////////
-        //////////
-        #region ScaleConnect
+        #endregion
+
+        /// <summary>
+        /// Electronic Scale Logic (Connect logic, Scale data logic, ... ) - Kết nối với cân điện tử
+        /// </summary>
+        #region Electronic Scale Logic
         private void showData(object sender, EventArgs e)
         {
             if (double.TryParse(dataIn, out returnValue))
@@ -117,7 +123,7 @@ namespace MaterialScale2MES
 
         private void add2tempMat (object sender, EventArgs e)
         {
-            //Check và add data liệu vừa cân vào datatable
+            //Check & adding scaled data to tempMat datatable
             if (tempMat.Rows.Count > 0)
             {
                 bool checkExistMat = false;
@@ -125,7 +131,7 @@ namespace MaterialScale2MES
                 {
                     if ((tempMat.Rows[i]["MatCode"].ToString() == VariablesSave.matCode || tempMat.Rows[i]["SubMat"].ToString() == VariablesSave.matCode))
                     {
-                        tempMat.Rows[i]["SumScale"] = totalScaleWeight.ToString();
+                        tempMat.Rows[i]["SumScale"] = totalScaleWeight;
                         checkExistMat = true;
                     }
                 }
@@ -240,13 +246,8 @@ namespace MaterialScale2MES
         }
         #endregion
 
-        //////////
-        //////////
-        //////////Xử lý quét QR / QR scan logic
-        //////////
-        //////////
-        
-        // Hàm check nếu đã có dữ liệu lưu trữ liệu chưa ( Cho những đơn đã làm )
+
+        #region QR scan logic / Main logic / Event logic
         public bool checkExistMatOrder (string jobOrdUUID) // Check if Job order have Import material order
         {
             VariablesSave.ResetJobOrdMat();
@@ -258,6 +259,7 @@ namespace MaterialScale2MES
             sqlMesPlanning.getComboBoxData(getAllMatOrdUUID.ToString(), ref cbx_checkExMat);
             if (cbx_checkExMat.Items.Count > 0)
             {
+                //If job order exist material orders --> Save all uuid of job_order_material to later update task --> return true
                 string tempMatOrdUUIDs = "";
                 for (int i = 0; i < cbx_checkExMat.Items.Count; i++)
                 {
@@ -272,9 +274,11 @@ namespace MaterialScale2MES
                 }
                 VariablesSave.MatOrder = tempMatOrdUUIDs.Split(';');
                 return true;
+                
             }
             else
             {
+                //If nothing exist --> Not save --> return false
                 return false;
             }
         }
@@ -283,7 +287,7 @@ namespace MaterialScale2MES
        {
             if (e.KeyChar == (char)13)
             {
-                if (serialPort1.IsOpen)
+                if (serialPort1.IsOpen) // Also check scale connection when scan QR code
                 {
                     string QRtext = txtQR.Text;
                     txtQR.Text = null;
@@ -291,7 +295,9 @@ namespace MaterialScale2MES
                     if (!String.IsNullOrEmpty(QRtext))
                     {
                         matCode = QRtext.Split(';');
-                        //Xét QR là mã liệu hay mã nhân viên nếu mã nhân viên thì lưu lên MES
+                        //
+                        //Begin check logic to see if QR code just scan is material QR or Employee QR or else ...
+                        //
                         if (QRtext.Substring(0, 1) == "s" && matCode[0] != "setting")
                         {
                             if (!String.IsNullOrEmpty(matCode[1]))
@@ -364,40 +370,30 @@ where work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'")
                                         sqlMesPlanningExcution.getComboBoxData(getMatCode.ToString(), ref cbx_matCodeList);
                                         if (isAddSubMat == true)
                                         {
+                                            DialogResult dialogResult;
                                             if (!cbx_matCodeList.Items.Contains(matCode[1].Trim()))
                                             {
-                                                DialogResult dialogResult = MessageBox.Show("Mã liệu "+matCode[1]+"vừa quét không có trong đơn làm việc, chắc chắn muốn lưu ?", "Warning", MessageBoxButtons.OKCancel);
-                                                if (dialogResult == DialogResult.OK)
-                                                {
-                                                    if (subRowIndex != -1 && tempMat.Rows[subRowIndex]["MatCode"].ToString() != matCode[1].Trim())
-                                                    {
-                                                        tempMat.Rows[subRowIndex]["SubMat"] = matCode[1].Trim();
-                                                        
-                                                    }
-                                                    else
-                                                    {
-                                                        MessageBox.Show("Lỗi không bắt được mã hoặc mã trùng với mã liệu chính!");
-                                                    }
-                                                    isAddSubMat = false;
-                                                }
+                                                dialogResult = MessageBox.Show("Mã liệu "+matCode[1]+"vừa quét không có trong đơn làm việc, chắc chắn muốn lưu ?", "Warning", MessageBoxButtons.OKCancel);
                                             }
                                             else
                                             {
-                                                DialogResult dialogResult = MessageBox.Show("Thêm mã liệu "+matCode[1]+" thành liệu phụ ?", "Warning", MessageBoxButtons.OKCancel);
-                                                if (dialogResult == DialogResult.OK)
-                                                {
-                                                    if (subRowIndex != -1 && tempMat.Rows[subRowIndex]["MatCode"].ToString() != matCode[1].Trim())
-                                                    {
-                                                        tempMat.Rows[subRowIndex]["SubMat"] = matCode[1].Trim();
-                                                    }
-                                                    else
-                                                    {
-                                                        MessageBox.Show("Lỗi không bắt được mã hoặc mã trùng với mã liệu chính!");
-                                                    }
-                                                    isAddSubMat = false;
-                                                }
-                                                txtQR.Focus();
+                                                dialogResult = MessageBox.Show("Thêm mã liệu "+matCode[1]+" thành liệu phụ ?", "Warning", MessageBoxButtons.OKCancel);
                                             }
+
+                                            if (dialogResult == DialogResult.OK)
+                                            {
+                                                if (subRowIndex != -1 && tempMat.Rows[subRowIndex]["MatCode"].ToString() != matCode[1].Trim())
+                                                {
+                                                    tempMat.Rows[subRowIndex]["SubMat"] = matCode[1].Trim();
+
+                                                }
+                                                else
+                                                {
+                                                    MessageBox.Show("Lỗi không bắt được mã hoặc mã trùng với mã liệu chính!");
+                                                }
+                                                isAddSubMat = false;
+                                            }
+                                            txtQR.Focus();
                                         }
                                         else
                                         {
@@ -512,6 +508,109 @@ where work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'")
             txtQR.Focus();
         }
 
+        /// <summary>
+        /// Important logic (Save MES button click, Select orders, ... )
+        /// </summary>
+        #region Important event logic 
+
+        private void dtgv_chooseWO_CellClick(object sender, DataGridViewCellEventArgs e) //Select job order
+        {
+            if (dtgv_chooseWO.SelectedCells.Count > 0)
+            {
+                int selectedrowindex = dtgv_chooseWO.SelectedCells[0].RowIndex;
+                DataGridViewRow selectedRow = dtgv_chooseWO.Rows[selectedrowindex];
+                VariablesSave.deptUUID = Convert.ToString(selectedRow.Cells["ID"].Value);
+                VariablesSave.JobOrdUUID = Convert.ToString(selectedRow.Cells["jobOrdUUID"].Value);
+                lb_erpNo.Text = Convert.ToString(selectedRow.Cells["orderNo"].Value);
+                lb_jobNo.Text = Convert.ToString(selectedRow.Cells["jobNo"].Value);
+                lb_finishQty.Text = Convert.ToString(selectedRow.Cells["finishQty"].Value);
+                lb_prodNo.Text = Convert.ToString(selectedRow.Cells["prodNo"].Value);
+                lb_createDate.Text = Convert.ToString(selectedRow.Cells["createDate"].Value);
+                lb_orderQty.Text = Convert.ToString(selectedRow.Cells["orderQty"].Value);
+            }
+            txtQR.Focus();
+        }
+
+        private void txb_searchOrder_KeyPress(object sender, KeyPressEventArgs e) //Search in result datatable when scan material QR
+        {
+            if (e.KeyChar == (char)13)
+            {
+                this.dtgv_chooseWO.ClearSelection();
+                if (txb_searchOrder.Text.Trim() != "")
+                {
+                    DataTable dt = new DataTable();
+                    string selectExpression = "orderNo LIKE '%" + txb_searchOrder.Text.Trim() + "%' OR jobNo like '%" + txb_searchOrder.Text.Trim() + "%' OR prodNo like '%" + txb_searchOrder.Text.Trim() + "%'";
+                    dtgv_chooseWO.DataSource = null;
+                    if (dtgvWOData.Rows.Count > 0)
+                    {
+                        DataRow[] rows = dtgvWOData.Select(selectExpression);
+                        if (rows.Count() > 0)
+                        {
+                            dt = rows.CopyToDataTable();
+                            SupportClass.LoadData2DTGVChooseWO(dtgv_chooseWO, dt);
+                        }
+                    }
+                }
+                else
+                {
+                    SupportClass.LoadData2DTGVChooseWO(dtgv_chooseWO, dtgvWOData);
+                }
+                txtQR.Focus();
+            }
+        }
+
+        private void dtgv_allScannedMat_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                if (e.ColumnIndex == 0) // Lưu cột button = index 0 do thêm = hard code :v 
+                {
+                    subRowIndex = e.RowIndex;
+                    isAddSubMat = true;
+                    MessageBox.Show("Mã liệu quét tiếp theo sẽ được lưu thành liệu phụ!");
+                }
+                if (e.ColumnIndex == 1) // Lưu cột button = index 1 do thêm = hard code :v 
+                {
+                    DataRow dr = tempMat.Rows[e.RowIndex];
+                    dr.Delete();
+                    tempMat.AcceptChanges();
+                    SupportClass.LoadData2DTGVScannedMat(dtgv_allScannedMat, tempMat);
+                }
+                if (e.ColumnIndex == 3) // 2 3 4 5 ... 0 1 --> thứ tự cột khi thêm = hard code
+                {
+                    DialogResult dialogResult = MessageBox.Show("Xóa thông tin liệu phụ ?", "Warning", MessageBoxButtons.OKCancel);
+                    if (dialogResult == DialogResult.OK)
+                    {
+                        tempMat.Rows[e.RowIndex]["SubMat"] = "";
+                        SupportClass.LoadData2DTGVScannedMat(dtgv_allScannedMat, tempMat);
+                    }
+                }
+            }
+            txtQR.Focus();
+        }
+
+        private void btn_save2MES_Click(object sender, EventArgs e)
+        {
+            //Call save logic in UploadMain.cs
+            txtQR.Focus();
+        }
+
+        private void btn_Undo_Click(object sender, EventArgs e)
+        {
+            if (tempMat.Rows.Count > 0)
+            {
+                for (int i = 0; i < tempMat.Rows.Count; i++)
+                {
+                    if (tempMat.Rows[i]["MatCode"].ToString() == tempMatCode || tempMat.Rows[i]["SubMat"].ToString() == tempMatCode)
+                    {
+                        tempMat.Rows[i]["SumScale"] = tempScaleQty;
+                    }
+                }
+            }
+            txtQR.Focus();
+        }
+        #endregion
+
         private void btn_reselectWO_Click(object sender, EventArgs e)
         {
             DialogResult dialogResult = MessageBox.Show("Cảnh báo", "Bạn có muốn chọn lại đơn khác và xóa các dữ liệu đã cân?", MessageBoxButtons.OKCancel);
@@ -551,7 +650,13 @@ where work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'")
             txtQR.Text = null;
             txtQR.Focus();
         }
-
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            VariablesSave.ResetEmployee();
+            VariablesSave.ResetDept();
+            VariablesSave.ResetMaterial();
+            this.Dispose();
+        }
         private void cbComPort_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)13)
@@ -559,7 +664,6 @@ where work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'")
                 txtQR.Focus();
             }
         }
-
         private void cbBaudRate_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)13)
@@ -567,7 +671,6 @@ where work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'")
                 txtQR.Focus();
             }
         }
-
         private void cbDataBits_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)13)
@@ -575,7 +678,6 @@ where work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'")
                 txtQR.Focus();
             }
         }
-
         private void cbStopBits_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)13)
@@ -583,7 +685,6 @@ where work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'")
                 txtQR.Focus();
             }
         }
-
         private void cbParityBits_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)13)
@@ -591,120 +692,10 @@ where work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'")
                 txtQR.Focus();
             }
         }
-
         private void MainForm_Shown(object sender, EventArgs e)
         {
             txtQR.Focus();
         }
-
-        private void dtgv_chooseWO_CellClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (dtgv_chooseWO.SelectedCells.Count > 0)
-            {
-                int selectedrowindex = dtgv_chooseWO.SelectedCells[0].RowIndex;
-                DataGridViewRow selectedRow = dtgv_chooseWO.Rows[selectedrowindex];
-                VariablesSave.deptUUID = Convert.ToString(selectedRow.Cells["ID"].Value);
-                VariablesSave.JobOrdUUID = Convert.ToString(selectedRow.Cells["jobOrdUUID"].Value);
-                lb_erpNo.Text = Convert.ToString(selectedRow.Cells["orderNo"].Value);
-                lb_jobNo.Text = Convert.ToString(selectedRow.Cells["jobNo"].Value);
-                lb_finishQty.Text = Convert.ToString(selectedRow.Cells["finishQty"].Value);
-                lb_prodNo.Text = Convert.ToString(selectedRow.Cells["prodNo"].Value);
-                lb_createDate.Text = Convert.ToString(selectedRow.Cells["createDate"].Value);
-                lb_orderQty.Text = Convert.ToString(selectedRow.Cells["orderQty"].Value);
-            }
-            txtQR.Focus();
-        }
-
-        private void txb_searchOrder_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (e.KeyChar == (char)13)
-            {
-                this.dtgv_chooseWO.ClearSelection();
-                if (txb_searchOrder.Text.Trim() != "")
-                {
-                    DataTable dt = new DataTable();
-                    string selectExpression = "orderNo LIKE '%" + txb_searchOrder.Text.Trim() + "%' OR jobNo like '%" + txb_searchOrder.Text.Trim() + "%' OR prodNo like '%" + txb_searchOrder.Text.Trim() + "%'";
-                    dtgv_chooseWO.DataSource = null;
-                    if (dtgvWOData.Rows.Count > 0)
-                    {
-                        DataRow[] rows = dtgvWOData.Select(selectExpression);
-                        if (rows.Count() > 0)
-                        {
-                            dt = rows.CopyToDataTable();
-                            SupportClass.LoadData2DTGVChooseWO(dtgv_chooseWO, dt);
-                        }
-                    }
-                }
-                else
-                {
-                    SupportClass.LoadData2DTGVChooseWO(dtgv_chooseWO, dtgvWOData);
-                }
-                txtQR.Focus();
-            }
-        }
-
-        private void dtgv_allScannedMat_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (e.RowIndex >= 0)
-            {
-                if (e.ColumnIndex == 0) // Lưu cột button = index 0 do thêm = hard code :v 
-                {
-                    subRowIndex = e.RowIndex;
-                    isAddSubMat = true;
-                    MessageBox.Show("Mã liệu quét tiếp theo sẽ được lưu thành liệu phụ!");
-                }
-                if (e.ColumnIndex == 1) // Lưu cột button = index 0 do thêm = hard code :v 
-                {
-                    DataRow dr = tempMat.Rows[e.RowIndex];
-                    dr.Delete();
-                    tempMat.AcceptChanges();
-                    SupportClass.LoadData2DTGVScannedMat(dtgv_allScannedMat, tempMat);
-                }
-                if (e.ColumnIndex == 3) // Lưu cột button = index 0 do thêm = hard code :v 
-                {
-                    DialogResult dialogResult = MessageBox.Show("Xóa thông tin liệu phụ ?", "Warning", MessageBoxButtons.OKCancel);
-                    if (dialogResult == DialogResult.OK)
-                    {
-                        tempMat.Rows[e.RowIndex]["SubMat"] = "";
-                        SupportClass.LoadData2DTGVScannedMat(dtgv_allScannedMat, tempMat);
-                    }
-                }
-            }
-            txtQR.Focus();
-        }
-
-        private void btn_save2MES_Click(object sender, EventArgs e)
-        {
-
-            txtQR.Focus();
-        }
-
-        private void btn_Undo_Click(object sender, EventArgs e)
-        {
-            if ( tempMat.Rows.Count > 0)
-            {
-                for (int i = 0; i < tempMat.Rows.Count; i++)
-                {
-                    if (tempMat.Rows[i]["MatCode"].ToString() == tempMatCode || tempMat.Rows[i]["SubMat"].ToString() == tempMatCode)
-                    {
-                        tempMat.Rows[i]["SumScale"] = tempScaleQty;
-                    }
-                }
-            }
-            txtQR.Focus();
-        }
-
-        private void btn_saveTempMat_Click(object sender, EventArgs e)
-        {
-            if (returnValue != 0)
-            {
-                scaleTimes = 0; // --> Not allow user to scale another time without scan material QR code
-                pnl_scaleWait.BackColor = Color.Black;
-                this.Invoke(new EventHandler(add2tempMat));
-                SupportClass.LoadData2DTGVScannedMat(dtgv_allScannedMat, tempMat);
-            }
-        }
-
         private void txb_searchOrder_TextChanged(object sender, EventArgs e)
         {
             if (txb_searchOrder.Text.Trim() == "")
@@ -713,13 +704,6 @@ where work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'")
                 txtQR.Focus();
             }
         }
-
-        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            VariablesSave.ResetEmployee();
-            VariablesSave.ResetDept();
-            VariablesSave.ResetMaterial();
-            this.Dispose();
-        }
+        #endregion
     }
 }
