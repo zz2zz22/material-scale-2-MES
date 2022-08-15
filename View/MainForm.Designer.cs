@@ -90,6 +90,7 @@ namespace MaterialScale2MES
             this.cbComPort = new System.Windows.Forms.ComboBox();
             this.panel2 = new System.Windows.Forms.Panel();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.cbx_chooseReplenishmentType = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.dtgv_chooseWO)).BeginInit();
             this.gbx_chooseWO.SuspendLayout();
             this.gbx_informationWO.SuspendLayout();
@@ -257,6 +258,7 @@ namespace MaterialScale2MES
             // 
             // gbx_informationWO
             // 
+            this.gbx_informationWO.Controls.Add(this.cbx_chooseReplenishmentType);
             this.gbx_informationWO.Controls.Add(this.btn_Undo);
             this.gbx_informationWO.Controls.Add(this.pnl_scaleWait);
             this.gbx_informationWO.Controls.Add(this.lb_finishQty);
@@ -841,6 +843,20 @@ namespace MaterialScale2MES
             this.pictureBox1.TabIndex = 4;
             this.pictureBox1.TabStop = false;
             // 
+            // cbx_chooseReplenishmentType
+            // 
+            this.cbx_chooseReplenishmentType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbx_chooseReplenishmentType.FormattingEnabled = true;
+            this.cbx_chooseReplenishmentType.Items.AddRange(new object[] {
+            "领料 - Picking Material",
+            "补料 - Feed Material",
+            "退料 - Return Material"});
+            this.cbx_chooseReplenishmentType.Location = new System.Drawing.Point(343, 146);
+            this.cbx_chooseReplenishmentType.Name = "cbx_chooseReplenishmentType";
+            this.cbx_chooseReplenishmentType.Size = new System.Drawing.Size(357, 31);
+            this.cbx_chooseReplenishmentType.TabIndex = 35;
+            this.cbx_chooseReplenishmentType.SelectionChangeCommitted += new System.EventHandler(this.cbx_chooseReplenishmentType_SelectionChangeCommitted);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -942,6 +958,7 @@ namespace MaterialScale2MES
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button btn_Undo;
+        private System.Windows.Forms.ComboBox cbx_chooseReplenishmentType;
     }
 }
 

@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Windows.Forms;
 using System.IO.Ports;
+using Quartz;
+using Quartz.Impl;
 
 namespace MaterialScale2MES
 {
@@ -58,12 +60,22 @@ namespace MaterialScale2MES
             DataColumn tempMatCol;
             tempMatCol = new DataColumn();
             tempMatCol.DataType = Type.GetType("System.String");
-            tempMatCol.ColumnName = "MatCode";
+            tempMatCol.ColumnName = "MatCode";//2
+            tempMat.Columns.Add(tempMatCol);
+            
+            tempMatCol = new DataColumn();
+            tempMatCol.DataType = Type.GetType("System.String");
+            tempMatCol.ColumnName = "MatUUID";//3
             tempMat.Columns.Add(tempMatCol);
 
             tempMatCol = new DataColumn();
             tempMatCol.DataType = Type.GetType("System.String");
-            tempMatCol.ColumnName = "SubMat";
+            tempMatCol.ColumnName = "SubMat";//4
+            tempMat.Columns.Add(tempMatCol);
+            
+            tempMatCol = new DataColumn();
+            tempMatCol.DataType = Type.GetType("System.String");
+            tempMatCol.ColumnName = "SubMatUUID";//5
             tempMat.Columns.Add(tempMatCol);
 
             tempMatCol = new DataColumn();
@@ -80,6 +92,11 @@ namespace MaterialScale2MES
             tempMatCol.DataType = Type.GetType("System.Decimal");
             tempMatCol.ColumnName = "SumScale";
             tempMat.Columns.Add(tempMatCol);
+
+            tempMatCol = new DataColumn();
+            tempMatCol.DataType = Type.GetType("System.String");
+            tempMatCol.ColumnName = "JOMatUUID";
+            tempMat.Columns.Add(tempMatCol);
         }
         private void MainForm_Load(object sender, EventArgs e)
         {
@@ -90,11 +107,21 @@ namespace MaterialScale2MES
             txtQR.Multiline = false;
             txtQR.Width = 0;
             txtQR.Height = 0;
+            cbx_chooseReplenishmentType.SelectedIndex = -1;
             cbComPort.SelectedIndex = -1;
             cbBaudRate.SelectedIndex = 2;
             cbDataBits.SelectedIndex = 2;
             cbStopBits.SelectedIndex = 0;
             cbParityBits.SelectedIndex = 0;
+
+            IScheduler scheduler = StdSchedulerFactory.GetDefaultScheduler().Result;
+            scheduler.Start();
+            IJobDetail job = JobBuilder.Create<EmailJob>().Build();
+            ITrigger trigger = TriggerBuilder.Create()
+             .WithIdentity("IDGJob", "IDG")
+               .WithSchedule(CronScheduleBuilder.DailyAtHourAndMinute(13, 30))
+               .Build();
+            scheduler.ScheduleJob(job, trigger);
         }
         #endregion
 
@@ -137,12 +164,12 @@ namespace MaterialScale2MES
                 }
                 if(!checkExistMat)
                 {
-                    tempMat.Rows.Add(VariablesSave.matCode, "", VariablesSave.matExpDate, VariablesSave.matLotNo, totalScaleWeight);
+                    tempMat.Rows.Add(VariablesSave.matCode, "" , "", "" , VariablesSave.matExpDate, VariablesSave.matLotNo, totalScaleWeight, "");
                 }
             }
             else
             {
-                tempMat.Rows.Add(VariablesSave.matCode, "", VariablesSave.matExpDate, VariablesSave.matLotNo, totalScaleWeight);
+                tempMat.Rows.Add(VariablesSave.matCode, "", "", "", VariablesSave.matExpDate, VariablesSave.matLotNo, totalScaleWeight, "");
             }
             tempMatCode = VariablesSave.matCode;
         }
@@ -231,15 +258,10 @@ namespace MaterialScale2MES
             {
                 serialPort1.Close();
                 progressBar1.Value = 0;
-            }
-            if (btClose.Enabled)
-            {
-                btOpen.Enabled = true;
-                btClose.Enabled = false;
-            }
-            else
-            {
-                btOpen.Enabled = false;
+                if (!btOpen.Enabled)
+                {
+                    btOpen.Enabled = true;
+                }
             }
             cbComPort.Enabled = true;
             txtQR.Focus();
@@ -397,17 +419,17 @@ where work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'")
                                         }
                                         else
                                         {
-                                            //bool checkSubMat = false;
-                                            //if (tempMat.Rows.Count > 0)
-                                            //{
-                                            //    for(int k = 0; k < tempMat.Rows.Count; k ++)
-                                            //    {
-                                            //        if (tempMat.Rows[k]["SubMat"].ToString() == matCode[1].Trim())
-                                            //            checkSubMat = true;
-                                            //    }
-                                            //}
-                                            //if (cbx_matCodeList.Items.Contains(matCode[1].Trim()) || checkSubMat == true)
-                                            //{
+                                            bool checkSubMat = false;
+                                            if (tempMat.Rows.Count > 0)
+                                            {
+                                                for (int k = 0; k < tempMat.Rows.Count; k++)
+                                                {
+                                                    if (tempMat.Rows[k]["SubMat"].ToString() == matCode[1].Trim())
+                                                        checkSubMat = true;
+                                                }
+                                            }
+                                            if (cbx_matCodeList.Items.Contains(matCode[1].Trim()) || checkSubMat == true)
+                                            {
                                                 if (scaleTimes == 0)
                                                 {
                                                     int flag = 0;
@@ -444,11 +466,11 @@ where work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'")
                                                 {
                                                     MessageBox.Show("Mã đã quét vui lòng cân liệu!");
                                                 }
-                                            //}
-                                            //else
-                                            //{
-                                            //    MessageBox.Show("Mã liệu vừa quét không thuộc đơn đã chọn vui lòng thử lại!");
-                                            //}
+                                            }
+                                            else
+                                            {
+                                                MessageBox.Show("Mã liệu vừa quét không thuộc đơn đã chọn vui lòng thử lại!");
+                                            }
                                         }
                                     }
                                     txtQR.Focus();
@@ -462,7 +484,7 @@ where work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'")
                         }
                         else
                         {
-                            if (matCode[0] != "setting" && String.IsNullOrEmpty(matCode[4]))
+                            if (matCode[0] != "setting")
                             {
                                 string UUID = null;
                                 sqlMesBaseDataCon sqlMesBaseData = new sqlMesBaseDataCon();
@@ -592,6 +614,29 @@ where work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'")
         private void btn_save2MES_Click(object sender, EventArgs e)
         {
             //Call save logic in UploadMain.cs
+            bool isReadyToSave = true;
+            if (String.IsNullOrEmpty(VariablesSave.replenishmentType))
+            {
+                MessageBox.Show("Hãy chọn loại bổ sung vật liệu trước khi lưu!");
+                isReadyToSave = false;
+            }
+            if (tempMat.Rows.Count == 0)
+            {
+                MessageBox.Show("Không có dữ liệu nguyên liệu để lưu hãy tiến hành quét và cân liệu trước!");
+                isReadyToSave = false;
+            }
+            if (String.IsNullOrEmpty(VariablesSave.empCode))
+            {
+                MessageBox.Show("Xin hãy quét code nhân viên!");
+                isReadyToSave = false;
+            }
+            if (isReadyToSave) //isReadyToSave true --> Save to MES.
+            {
+                UploadMain.Date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                //Save logic in UploadMain.cs
+                UploadMain.transactionSupportUploadData(tempMat);
+                //Save mail logic
+            }
             txtQR.Focus();
         }
 
@@ -607,6 +652,31 @@ where work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'")
                     }
                 }
             }
+            txtQR.Focus();
+        }
+
+        private void cbx_chooseReplenishmentType_SelectionChangeCommitted(object sender, EventArgs e)
+        {
+            switch(cbx_chooseReplenishmentType.SelectedIndex)
+            {
+                case 0:
+                    VariablesSave.replenishmentType = "领料";
+                    txtQR.Focus();
+                    break;
+                case 1:
+                    VariablesSave.replenishmentType = "补料";
+                    txtQR.Focus();
+                    break;
+                case 2:
+                    VariablesSave.replenishmentType = "退料"; 
+                    txtQR.Focus();
+                    break;
+                default:
+                    VariablesSave.replenishmentType = null;
+                    txtQR.Focus();
+                    break;
+            }
+
             txtQR.Focus();
         }
         #endregion
@@ -629,6 +699,9 @@ where work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'")
 
                 VariablesSave.ResetDept();
                 VariablesSave.ResetMaterial();
+                VariablesSave.ResetJobOrdMat();
+                VariablesSave.ResetMaterial();
+                
                 //Các label lúc chọn liệu
                 lb_erpNo.Text = "...";
                 lb_jobNo.Text = "...";
@@ -646,6 +719,7 @@ where work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'")
 
                 scaleTimes = 0;
                 pnl_scaleWait.BackColor = Color.Black;
+                cbx_chooseReplenishmentType.SelectedIndex = -1;
             }
             txtQR.Text = null;
             txtQR.Focus();

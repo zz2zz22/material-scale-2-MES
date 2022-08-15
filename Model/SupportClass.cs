@@ -6,10 +6,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+
 namespace MaterialScale2MES
 {
     public class SupportClass
-    {
+    { 
+        // we use CronScheduleBuilder's static helper methods here
         public static void LoadData2DTGVChooseWO(DataGridView dataGridView, DataTable dt)
         {
             dataGridView.DataSource = dt;
@@ -28,6 +30,9 @@ namespace MaterialScale2MES
         public static void LoadData2DTGVScannedMat(DataGridView dataGridView, DataTable dt)
         {
             dataGridView.DataSource = dt;
+            dataGridView.Columns["JOMatUUID"].Visible = false;
+            dataGridView.Columns["MatUUID"].Visible = false;
+            dataGridView.Columns["SubMatUUID"].Visible = false;
             dataGridView.Columns["MatCode"].HeaderText = "Mã liệu";
             dataGridView.Columns["SubMat"].HeaderText = "Liệu phụ";
             dataGridView.Columns["ExpDate"].HeaderText = "Hạn liệu";
@@ -35,5 +40,7 @@ namespace MaterialScale2MES
             dataGridView.Columns["SumScale"].HeaderText = "Tổng KL Cân";
             
         }
+
+
     }
 }

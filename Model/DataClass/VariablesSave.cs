@@ -15,7 +15,6 @@ namespace MaterialScale2MES
 
         //Material Save
         public static String matCode { get; set; }
-        public static String matName { get; set; }
         public static String matLotNo { get; set; }
         public static String matExpDate { get; set; }
         public static double matScanQuantity { get; set; } //Quantity on QR code scan
@@ -28,6 +27,10 @@ namespace MaterialScale2MES
         //Job order material UUIDs save 
         public static String[] MatOrder { get; set; } 
 
+        //Replenishment type save
+        public static String replenishmentType { get; set; } 
+        public static String dataBase { get; set; } 
+
         //Reset Employee Savedata
         public static void ResetEmployee()
         {
@@ -39,7 +42,6 @@ namespace MaterialScale2MES
         public static void ResetMaterial()
         {
             matCode = null;
-            matName = null;
             matExpDate = null;
             matLotNo = null;
             matScanQuantity = 0;
@@ -51,6 +53,7 @@ namespace MaterialScale2MES
         {
             JobOrdUUID = null;
             deptUUID = null;
+            replenishmentType = null;
         }
 
         //Reset JobOrd Mat Savedata 

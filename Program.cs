@@ -18,5 +18,6 @@ namespace MaterialScale2MES
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());
         }
+
     }
 }

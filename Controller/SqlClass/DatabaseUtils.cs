@@ -14,9 +14,10 @@ namespace MaterialScale2MES
         #region BaseDataCon 
         public static MySqlConnection GetMes_Base_DataDBC()
         {
-            string host = "172.16.0.22";
+            string host = "localhost"; // 172.16.0.22 - test(localhost - myPass)
+            VariablesSave.dataBase = host;
             string user = "root";
-            string password = "cloud-123456";
+            string password = "leanhvupro1"; // cloud-123456
             string database = "mes_base_data";
 
             return DatabaseSQLServerUtils.GetMesDBConnection(host, user, password, database);
@@ -24,20 +25,11 @@ namespace MaterialScale2MES
 
         public static MySqlConnection GetMes_Planning_ExcutionDBC()
         {
-            string host = "172.16.0.22";
+            string host = "localhost"; // 172.16.0.22
+            VariablesSave.dataBase = host;
             string user = "root";
-            string password = "cloud-123456";
+            string password = "leanhvupro1";// cloud-123456
             string database = "mes_planning_excution";
-
-            return DatabaseSQLServerUtils.GetMesDBConnection(host, user, password, database);
-        }
-
-        public static MySqlConnection GetMes_Quality_ControlDBC()
-        {
-            string host = "172.16.0.22";
-            string user = "guest";
-            string password = "guest@123";
-            string database = "mes_quality_control";
 
             return DatabaseSQLServerUtils.GetMesDBConnection(host, user, password, database);
         }

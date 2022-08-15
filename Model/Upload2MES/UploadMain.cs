@@ -12,29 +12,38 @@ namespace MaterialScale2MES
 {
     public class UploadMain
     {
-        int nextNo;
+        public static string nextNoFill;
+        public static string returnedOrderUUID;
         public static string Date;
-        public string updateAutoCodeHis(string empCode) //return SQL query to update 
+        public static string updateAutoCodeHis() //return SQL query to update 
         {
             try
             {
-                nextNo = 0;
+                int nextNo = 0;
+                int remainChar;
+                string empCode = VariablesSave.empCode;
                 sqlMesBaseDataCon sqlMesBaseData = new sqlMesBaseDataCon();
                 StringBuilder sqlUpdateAutoCodeHis = new StringBuilder();
-                string curNumStr = sqlMesBaseData.sqlExecuteScalarString("SELECT current_number FROM mes_base_data.autocode_his WHERE autocode_rule_uuid = '4E8DQFCD9BK1' AND delete_flag = '0'");
+                string curNumStr = sqlMesBaseData.sqlExecuteScalarString("SELECT current_number FROM autocode_his WHERE autocode_rule_uuid = '4E8DQFCD9BK1' AND delete_flag = '0'");
                 if (!String.IsNullOrEmpty(curNumStr))
                 {
+                    remainChar = Convert.ToInt32(sqlMesBaseData.sqlExecuteScalarString("SELECT LENGTH FROM autocode_info WHERE autocode_rule_uuid = '4E8DQFCD9BK1' AND line_no = '2' AND delete_flag = '0'"));
                     if (int.TryParse(curNumStr, out int curNo))
                     {
-                        curNo = int.Parse(curNumStr);
+                        curNo = int.Parse(curNumStr.Replace("0", "").Trim());
                         nextNo = curNo + 1;
-
-                        sqlUpdateAutoCodeHis.Append(@"update autocode_his set current_number = '" + nextNo + "', update_by = '" + empCode + "', update_date  = '" + Date + "' where autocode_rule_uuid = '4E8DQFCD9BK1' AND delete_flag = '0'");
+                        remainChar = remainChar - nextNo.ToString().Length;
+                        nextNoFill = nextNo.ToString().PadLeft(nextNo.ToString().Length + remainChar, '0');
+                        sqlUpdateAutoCodeHis.Append(@"update autocode_his set current_number = '" + nextNoFill + "', update_by = '" + empCode + "', update_date  = '" + Date + "' where autocode_rule_uuid = '4E8DQFCD9BK1' AND delete_flag = '0'");
                     }
                     else
                     {
-                        throw new ArgumentException("Cannot get the current autocode info!");
+                        throw new ArgumentException("Không chuyển được mã autocode sang số nguyên!");
                     }
+                }
+                else
+                {
+                    throw new ArgumentException("Không thể lấy mã autocode!");
                 }
                 return sqlUpdateAutoCodeHis.ToString();
             }
@@ -45,7 +54,7 @@ namespace MaterialScale2MES
             }
         }
 
-        public string insertJobOrderMat(DataTable matDT)
+        public static string insertJobOrderMat(DataTable matDT, int i) //Truyền vào datatable + vị trí dòng để thực hiện sqlCommand trong transaction cho nhiều dòng bằng vòng lặp for
         {
             try
             {
@@ -53,53 +62,69 @@ namespace MaterialScale2MES
                 sqlMesBaseDataCon sqlMesBaseData = new sqlMesBaseDataCon();
                 StringBuilder sqlInsertJOrderMat = new StringBuilder();
                 // Get or Generate data to insert to job_order_material for each line of data in tempMat datatable
-                if (matDT.Rows.Count > 0)
-                {
-                    string jobOrderMatUUID, jobOrderUUID, actMaterialNo, actMaterialUUID, actMaterialName, actMatUnitID, subMatNo, subMatUUID, subMatName, actMaterialLOT, matExpDate;
-                    decimal actBeginMatQty;
-                    if (!String.IsNullOrEmpty(VariablesSave.JobOrdUUID))
-                    {
-                        jobOrderUUID = VariablesSave.JobOrdUUID;
-                    }
-                    else
-                    {
-                        throw new ArgumentException("Job Order UUID cannot be null");
-                    }
-                    for (int i = 0; i < matDT.Rows.Count; i++)
-                    {
-                        bool isMissingData = false;
-                        jobOrderMatUUID = UUIDGenerator.getAscId();
-                        actMaterialNo = matDT.Rows[i]["MatCode"].ToString();
-                        actMaterialUUID = sqlMesBaseData.sqlExecuteScalarString("SELECT material_uuid FROM material_info WHERE material_no = '" + actMaterialNo + "' AND delete_flag = '0'");
-                        actMaterialName = sqlMesBaseData.sqlExecuteScalarString("SELECT material_name FROM material_info WHERE material_uuid = '" + actMaterialNo + "' AND delete_flag = '0'");
-                        actMatUnitID = sqlMesBaseData.sqlExecuteScalarString("SELECT unit_uuid FROM material_info WHERE material_uuid = '" + actMaterialNo + "' and delete_flag = '0'");
-                        //Check if order have subtitute material ?
-                        if (!String.IsNullOrEmpty(matDT.Rows[i]["SubMat"].ToString()))
-                        {
-                            subMatNo = matDT.Rows[i]["SubMat"].ToString();
-                            subMatUUID = sqlMesBaseData.sqlExecuteScalarString("SELECT material_uuid FROM material_info WHERE material_no = '" + subMatNo + "' AND delete_flag = '0'");
-                            subMatName = sqlMesBaseData.sqlExecuteScalarString("SELECT material_name FROM material_info WHERE material_uuid = '" + subMatNo + "' AND delete_flag = '0'");
-                        }
-                        else
-                        {
-                            //Generate null values
-                            subMatNo = null;
-                            subMatUUID = null;
-                            subMatName = null;
-                        }
-                        actMaterialLOT = matDT.Rows[i]["LOT"].ToString();
-                        string[] tempExpDate = matDT.Rows[i]["ExpDate"].ToString().Split('/');
-                        matExpDate = tempExpDate[2] + "-" + tempExpDate[1] + "-" + tempExpDate[0];
-                        actBeginMatQty = (decimal)matDT.Rows[i]["SumScale"];
+                string jobOrderMatUUID, jobOrderUUID, actMaterialNo, actMaterialUUID, actMaterialName, actMatUnitID, subMatNo, subMatUUID, subMatName, actMaterialLOT, matExpDate, empCode, actBeginMatQty;
 
-                        if (String.IsNullOrEmpty(actMaterialUUID) == true || String.IsNullOrEmpty(actMaterialName) == true || String.IsNullOrEmpty(actMaterialLOT) == true)
-                        {
-                            isMissingData = true;
-                        }
-                    }
+                if (!String.IsNullOrEmpty(VariablesSave.JobOrdUUID))
+                {
+                    jobOrderUUID = VariablesSave.JobOrdUUID;
+                }
+                else
+                {
+                    throw new ArgumentException("Job Order UUID không thể bị rỗng!");
+                }
+                bool isMissingData = false;
+                jobOrderMatUUID = UUIDGenerator.getAscId();
+                matDT.Rows[i]["JOMatUUID"] = jobOrderMatUUID;
+                actMaterialNo = matDT.Rows[i]["MatCode"].ToString();
+                actMaterialUUID = sqlMesBaseData.sqlExecuteScalarString("SELECT material_uuid FROM material_info WHERE material_no = '" + actMaterialNo + "' AND delete_flag = '0'");
+                matDT.Rows[i]["MatUUID"] = actMaterialUUID;
+                actMaterialName = sqlMesBaseData.sqlExecuteScalarString("SELECT material_name FROM material_info WHERE material_uuid = '" + actMaterialUUID + "' AND delete_flag = '0'");
+                actMatUnitID = sqlMesBaseData.sqlExecuteScalarString("SELECT unit_uuid FROM material_info WHERE material_uuid = '" + actMaterialUUID + "' and delete_flag = '0'");
+                //Check if order have subtitute material ?
+                if (!String.IsNullOrEmpty(matDT.Rows[i]["SubMat"].ToString()))
+                {
+                    subMatNo = "'" + matDT.Rows[i]["SubMat"].ToString() + "'";
+                    subMatUUID = "'" + sqlMesBaseData.sqlExecuteScalarString("SELECT material_uuid FROM material_info WHERE material_no = '" + matDT.Rows[i]["SubMat"].ToString() + "' AND delete_flag = '0'") + "'";
+                    matDT.Rows[i]["SubMatUUID"] = subMatUUID;
+                    subMatName = "'" + sqlMesBaseData.sqlExecuteScalarString("SELECT material_name FROM material_info WHERE material_no = '" + matDT.Rows[i]["SubMat"].ToString() + "' AND delete_flag = '0'") + "'";
+                }
+                else
+                {
+                    //Generate null values
+                    subMatNo = "NULL";
+                    subMatUUID = "NULL";
+                    matDT.Rows[i]["SubMatUUID"] = subMatUUID;
+                    subMatName = "NULL";
+                }
+                actMaterialLOT = matDT.Rows[i]["LOT"].ToString();
+                string[] tempExpDate = matDT.Rows[i]["ExpDate"].ToString().Split('/');
+                matExpDate = tempExpDate[2] + "-" + tempExpDate[1] + "-" + tempExpDate[0];
+                actBeginMatQty = matDT.Rows[i]["SumScale"].ToString();
+                empCode = VariablesSave.empCode;
+
+                if (String.IsNullOrEmpty(actMaterialUUID) || String.IsNullOrEmpty(actMaterialLOT) || String.IsNullOrEmpty(matExpDate) || String.IsNullOrEmpty(empCode))
+                {
+                    isMissingData = true;
                 }
 
-                return sqlInsertJOrderMat.ToString();
+                if (!isMissingData)
+                {
+                    sqlInsertJOrderMat.Append("Insert into job_order_material ");
+                    sqlInsertJOrderMat.Append(@"(uuid, job_order_uuid, actual_material_uuid, actual_material_no, actual_material_name, ");
+                    sqlInsertJOrderMat.Append(@"substitute_material_uuid, substitute_material_code, substitute_material_name, actual_finish_lot_no, ");
+                    sqlInsertJOrderMat.Append(@"material_prod_date, material_exp_date, actual_material_begin_qty, actual_unit_uuid, actual_material_end_qty, actual_material_qty, ");
+                    sqlInsertJOrderMat.Append(@"delete_flag, create_by, update_by, create_date, update_date, tenant_id )");
+                    sqlInsertJOrderMat.Append(" values ( ");
+                    sqlInsertJOrderMat.Append("'" + jobOrderMatUUID + "', '" + jobOrderUUID + "', '" + actMaterialUUID + "', '" + actMaterialNo + "', '" + actMaterialName + "', ");
+                    sqlInsertJOrderMat.Append(subMatUUID + ", " + subMatNo + ", " + subMatName + ", '" + actMaterialLOT + "', ");
+                    sqlInsertJOrderMat.Append("NULL, '" + matExpDate + "', '" + actBeginMatQty + "', '" + actMatUnitID + "', '" + actBeginMatQty + "', '" + actBeginMatQty + "', ");
+                    sqlInsertJOrderMat.Append("'0', '" + empCode + "', NULL, '" + Date + "', NULL, '-1' )");
+                    return sqlInsertJOrderMat.ToString();
+                }
+                else
+                {
+                    throw new ArgumentException("Thiếu dữ liệu đầu vào !");
+                }
             }
             catch(Exception ex)
             {
@@ -108,9 +133,80 @@ namespace MaterialScale2MES
             }
         }
 
-        public static void transactionSupportUploadData()
+        public static string insertReturnedMatOrder()
         {
-            Date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            try
+            {
+                sqlMesPlanningExcutionCon sqlMesPlanningExcution = new sqlMesPlanningExcutionCon();
+                StringBuilder sqlInsertReturnedMat = new StringBuilder();
+                string jobOrderUUID, workOrderUUID, jobNo, belongOrg, equipmentUUID;
+
+                returnedOrderUUID = UUIDGenerator.getAscId();
+                jobOrderUUID = VariablesSave.JobOrdUUID;
+                workOrderUUID = VariablesSave.deptUUID;
+                jobNo = sqlMesPlanningExcution.sqlExecuteScalarString("SELECT distinct job_no from job_order WHERE UUID = '" + jobOrderUUID + "' AND work_order_uuid = '" + workOrderUUID + "' AND delete_flag = '0'");
+                belongOrg = sqlMesPlanningExcution.sqlExecuteScalarString("SELECT distinct belong_organization from job_order WHERE UUID = '" + jobOrderUUID + "' AND work_order_uuid = '" + workOrderUUID + "' AND delete_flag = '0'");
+                equipmentUUID = sqlMesPlanningExcution.sqlExecuteScalarString("SELECT distinct equipment_uuid from job_order WHERE UUID = '" + jobOrderUUID + "' AND work_order_uuid = '" + workOrderUUID + "' AND delete_flag = '0'");
+
+                sqlInsertReturnedMat.Append("Insert into returned_material_order ");
+                sqlInsertReturnedMat.Append(@"(uuid, returned_material_order_no, job_uuid, work_order_uuid, job_no, ");
+                sqlInsertReturnedMat.Append(@"belong_organization, employee_uuid, equipment_uuid, tooling_uuid, ");
+                sqlInsertReturnedMat.Append(@"order_status, super_collar_flag, returned_replenishment_type, delete_flag, ");
+                sqlInsertReturnedMat.Append(@"create_by, create_date, update_by, update_date, tenant_id) ");
+                sqlInsertReturnedMat.Append(" values ( ");
+                sqlInsertReturnedMat.Append("'" + returnedOrderUUID + "', '" + nextNoFill + "', '" + jobOrderUUID + "', '" + workOrderUUID + "', '" + jobNo + "', ");
+                sqlInsertReturnedMat.Append("'" + belongOrg + "', '" + VariablesSave.empID + "', '" + equipmentUUID + "', '', ");
+                sqlInsertReturnedMat.Append("'0', NULL, '" + VariablesSave.replenishmentType + "', '0', "); // Ask iRoot --> replenishment type --> Let user choose which type
+                sqlInsertReturnedMat.Append("'" + VariablesSave.empCode + "', '" + Date + "', NULL, NULL, '-1')");
+                return sqlInsertReturnedMat.ToString();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Insert to returned_material_order: Exception thrown!");
+                return null;
+            }
+        }
+
+        public static string insertReturnedMatList(DataTable matDT, int i)
+        {
+            try
+            {
+                sqlMesPlanningExcutionCon sqlMesPlanningExcution = new sqlMesPlanningExcutionCon();
+                StringBuilder sqlInsertReturnedMatList = new StringBuilder();
+                string returnOrdListUUID, returnOrdUUID, returnOrdNo, jobOrdMatUUID, actMatUUID, subMatUUID, actReturnQty, empCode;
+
+                returnOrdListUUID = UUIDGenerator.getAscId();
+                returnOrdUUID = returnedOrderUUID;
+                returnOrdNo = nextNoFill;
+                jobOrdMatUUID = matDT.Rows[i]["JOMatUUID"].ToString();
+                actMatUUID = matDT.Rows[i]["MatUUID"].ToString();
+                subMatUUID = matDT.Rows[i]["SubMatUUID"].ToString();
+                actReturnQty = matDT.Rows[i]["SumScale"].ToString();
+                empCode = VariablesSave.empCode;
+
+                sqlInsertReturnedMatList.Append("Insert into returned_material_order_list ");
+                sqlInsertReturnedMatList.Append(@"(uuid, returned_order_uuid, returned_order_no, job_order_material_uuid, ");
+                sqlInsertReturnedMatList.Append(@"actual_material_uuid, substitute_material_uuid, actual_material_returned_qty, delete_flag, ");
+                sqlInsertReturnedMatList.Append(@"create_by, create_date, update_by, update_date, tenant_id )");
+                sqlInsertReturnedMatList.Append(" values ( ");
+                sqlInsertReturnedMatList.Append("'" + returnOrdListUUID + "', '" + returnOrdUUID + "', '" + returnOrdNo + "', '" + jobOrdMatUUID + "', ");
+                sqlInsertReturnedMatList.Append("'" + actMatUUID + "', " + subMatUUID + ", '" + actReturnQty + "', '0', ");
+                sqlInsertReturnedMatList.Append("'" + empCode + "', '" + Date + "', NULL, NULL, '-1')");
+
+                return sqlInsertReturnedMatList.ToString();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Insert to returned_material_order: Exception thrown!");
+                return null;
+            }
+        }
+
+        public static void transactionSupportUploadData(DataTable matDT)
+        {
+            string cmd1 = UploadMain.updateAutoCodeHis();
+            string cmd3 = UploadMain.insertReturnedMatOrder();
+            string cmd2, cmd4;
             MySqlConnection conn1 = DatabaseUtils.GetMes_Base_DataDBC();
             MySqlConnection conn2 = DatabaseUtils.GetMes_Planning_ExcutionDBC();
             MySqlTransaction trans1 = null;
@@ -119,7 +215,6 @@ namespace MaterialScale2MES
             MySqlCommand cmdMS2 = new MySqlCommand();
             try
             {
-                //Init connection to MES database with admin connection to edit data
                 conn1.Open();
                 conn2.Open();
                 trans1 = conn1.BeginTransaction();
@@ -128,10 +223,56 @@ namespace MaterialScale2MES
                 cmdMS2.Transaction = trans2;
                 cmdMS1.Connection = conn1;
                 cmdMS2.Connection = conn2;
+                // Update mes_base_data.autocode_his
+                if (!String.IsNullOrEmpty(cmd1))
+                {
+                    cmdMS1.CommandText = cmd1;
+                    cmdMS1.ExecuteNonQuery();
+                }
+                else
+                {
+                    throw new ArgumentException("Command text cannot null");
+                }
+
+                // Update / insert mes_planning_excution tables
+                if (!String.IsNullOrEmpty(cmd3))
+                {
+                    cmdMS2.CommandText = cmd3;
+                    cmdMS2.ExecuteNonQuery();
+                }
+                else
+                {
+                    throw new ArgumentException("Command text cannot null");
+                }
+                for (int i = 0; i < matDT.Rows.Count; i++)
+                {
+                    
+                    cmd2 = UploadMain.insertJobOrderMat(matDT, i);
+                    cmd4 = UploadMain.insertReturnedMatList(matDT, i);
+                    if (!String.IsNullOrEmpty(cmd2) && !String.IsNullOrEmpty(cmd4))
+                    {
+                        cmdMS2.CommandText = cmd2;
+                        cmdMS2.ExecuteNonQuery();
+
+                        cmdMS2.CommandText = cmd4;
+                        cmdMS2.ExecuteNonQuery();
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Command text cannot null");
+                    }
+                }
+
+                trans1.Commit();
+                trans2.Commit();
+                //Init connection to MES database with admin connection to edit data
+                MessageBox.Show("Succesfully saved data to " + VariablesSave.dataBase + " !");
             }
-            catch(Exception)
+            catch (Exception ex)
             {
-                throw;
+                MessageBox.Show(ex.Message + "\nFail to add and update data to MES!", "Error");
+                trans1.Rollback();
+                trans2.Rollback();
             }
         }
     }
