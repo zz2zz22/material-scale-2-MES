@@ -15,6 +15,10 @@ namespace MaterialScale2MES
         public static string nextNoFill;
         public static string returnedOrderUUID;
         public static string Date;
+
+        //Report variable save
+        public static string jobMatUUID;
+
         public static string updateAutoCodeHis() //return SQL query to update 
         {
             try
@@ -24,13 +28,15 @@ namespace MaterialScale2MES
                 string empCode = VariablesSave.empCode;
                 sqlMesBaseDataCon sqlMesBaseData = new sqlMesBaseDataCon();
                 StringBuilder sqlUpdateAutoCodeHis = new StringBuilder();
-                string curNumStr = sqlMesBaseData.sqlExecuteScalarString("SELECT current_number FROM autocode_his WHERE autocode_rule_uuid = '4E8DQFCD9BK1' AND delete_flag = '0'");
-                if (!String.IsNullOrEmpty(curNumStr))
+                string NumStr = sqlMesBaseData.sqlExecuteScalarString("SELECT current_number FROM autocode_his WHERE autocode_rule_uuid = '4E8DQFCD9BK1' AND delete_flag = '0'");
+                if (!String.IsNullOrEmpty(NumStr))
                 {
                     remainChar = Convert.ToInt32(sqlMesBaseData.sqlExecuteScalarString("SELECT LENGTH FROM autocode_info WHERE autocode_rule_uuid = '4E8DQFCD9BK1' AND line_no = '2' AND delete_flag = '0'"));
+                    string curNumStr = NumStr.TrimStart('0');
+                    curNumStr = curNumStr.Length > 0 ? curNumStr : "0";
                     if (int.TryParse(curNumStr, out int curNo))
                     {
-                        curNo = int.Parse(curNumStr.Replace("0", "").Trim());
+                        curNo = int.Parse(curNumStr);
                         nextNo = curNo + 1;
                         remainChar = remainChar - nextNo.ToString().Length;
                         nextNoFill = nextNo.ToString().PadLeft(nextNo.ToString().Length + remainChar, '0');
@@ -53,7 +59,6 @@ namespace MaterialScale2MES
                 return null;
             }
         }
-
         public static string insertJobOrderMat(DataTable matDT, int i) //Truyền vào datatable + vị trí dòng để thực hiện sqlCommand trong transaction cho nhiều dòng bằng vòng lặp for
         {
             try
@@ -74,6 +79,7 @@ namespace MaterialScale2MES
                 }
                 bool isMissingData = false;
                 jobOrderMatUUID = UUIDGenerator.getAscId();
+                jobMatUUID = jobOrderMatUUID;
                 matDT.Rows[i]["JOMatUUID"] = jobOrderMatUUID;
                 actMaterialNo = matDT.Rows[i]["MatCode"].ToString();
                 actMaterialUUID = sqlMesBaseData.sqlExecuteScalarString("SELECT material_uuid FROM material_info WHERE material_no = '" + actMaterialNo + "' AND delete_flag = '0'");
@@ -132,7 +138,6 @@ namespace MaterialScale2MES
                 return null;
             }
         }
-
         public static string insertReturnedMatOrder()
         {
             try
@@ -166,7 +171,6 @@ namespace MaterialScale2MES
                 return null;
             }
         }
-
         public static string insertReturnedMatList(DataTable matDT, int i)
         {
             try
@@ -201,7 +205,6 @@ namespace MaterialScale2MES
                 return null;
             }
         }
-
         public static void transactionSupportUploadData(DataTable matDT)
         {
             string cmd1 = UploadMain.updateAutoCodeHis();
@@ -256,6 +259,11 @@ namespace MaterialScale2MES
 
                         cmdMS2.CommandText = cmd4;
                         cmdMS2.ExecuteNonQuery();
+                        sqlMesPlanningExcutionCon sqlMesPlanning = new sqlMesPlanningExcutionCon();
+                        string jobNo = sqlMesPlanning.sqlExecuteScalarString("SELECT distinct job_no from job_order WHERE UUID = '" + VariablesSave.JobOrdUUID + "' AND work_order_uuid = '" + VariablesSave.deptUUID + "' AND delete_flag = '0'");
+                        string[] tempExpDate = matDT.Rows[i]["ExpDate"].ToString().Split('/');
+                        string matExpDate = tempExpDate[2] + "-" + tempExpDate[1] + "-" + tempExpDate[0];
+                        DataReport.addReport(DataReport.RP_TYPE.Success, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), jobMatUUID, jobNo, matDT.Rows[i]["MatCode"].ToString(), matDT.Rows[i]["SubMat"].ToString(), matDT.Rows[i]["SumScale"].ToString(), matExpDate, matDT.Rows[i]["LOT"].ToString(), nextNoFill, "Successfully transfer material info to MES system !");
                     }
                     else
                     {

@@ -22,5 +22,41 @@ namespace MaterialScale2MES.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string excelFileName {
+            get {
+                return ((string)(this["excelFileName"]));
+            }
+            set {
+                this["excelFileName"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string cfg_receivers {
+            get {
+                return ((string)(this["cfg_receivers"]));
+            }
+            set {
+                this["cfg_receivers"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string excelFilePath {
+            get {
+                return ((string)(this["excelFilePath"]));
+            }
+            set {
+                this["excelFilePath"] = value;
+            }
+        }
     }
 }
